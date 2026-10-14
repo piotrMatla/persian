@@ -1,0 +1,8 @@
+# Front controller – wszystkie żądania idą do index.php (ścieżki bez rozszerzenia .php).
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# Nic poza katalogiem public/ nie jest serwowane bezpośrednio.
+Options -Indexes

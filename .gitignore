@@ -1,0 +1,9 @@
+/vendor/
+/.env
+/var/
+/storage/logs/*.log
+.phpunit.result.cache
+.DS_Store
+Thumbs.db
+*.iml
+/.idea/
