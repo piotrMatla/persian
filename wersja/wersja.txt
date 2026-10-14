@@ -1,6 +1,12 @@
-Aktualna wersja: 1.10
+Aktualna wersja: 2.00
 Nazwa programu: eWnioski
 Historia zmian:
+2.00 (10-2026)
+ - Przejście na PHP 8.5 (PhpSpreadsheet zamiast PHPExcel, FPDF z Composera)
+ - Nowy wygląd: menu boczne, strona główna z kafelkami i ulubionymi, tryb ciemny
+ - Konfiguracja bazy i ścieżek w conf/config.php
+ - Eksporty do Excela nie przesyłają już zapytań SQL w formularzu
+ ----------------------------------------------------------------------------------------------------------------------
 1.10 (9-2020) (programista: Jakub Duda) (Osoba zgłaszająca: Magdalena Wulczyńska)
  - Stworzenie raportu wejść i wyjść
  ----------------------------------------------------------------------------------------------------------------------

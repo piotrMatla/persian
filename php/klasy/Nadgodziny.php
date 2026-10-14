@@ -55,7 +55,7 @@ class Nadgodziny extends Common
     function IloscDanychNaStronieLista() {
         if(!isset($_SESSION['ewnioski_produktywnosc_filter_nadgodziny_liczba_linijek'])) $_SESSION['ewnioski_produktywnosc_filter_nadgodziny_liczba_linijek'] = $this->RaportNadgodzinyLimit;
         if(isset($_POST['ewnioski_produktywnosc_filter_nadgodziny_liczba_linijek'])) {
-            $_SESSION['ewnioski_produktywnosc_filter_nadgodziny_liczba_linijek'] = $_POST['ewnioski_produktywnosc_filter_nadgodziny_liczba_linijek'];
+            $_SESSION['ewnioski_produktywnosc_filter_nadgodziny_liczba_linijek'] = max(1, (int)$_POST['ewnioski_produktywnosc_filter_nadgodziny_liczba_linijek']);
             $_SESSION['ewnioski_produktywnosc_filter_nadgodziny_offset'] = 0;
         }
         ?>
@@ -72,26 +72,27 @@ class Nadgodziny extends Common
                 </select> linijek</b>
         </form>
     <?php }
-    function WyslijMaila($adresat, $html, $temat, $from) {
+    /**
+     * Mail z ewidencji nadgodzin
+     * @param string $adresat Adresaci
+     * @param string $html Treść
+     * @param string $temat Temat
+     * @param string $from Nadawca
+     * @param string $ikona Obrazek z folderu Oddelegowania/img nad treścią (opcjonalnie)
+     */
+    function WyslijMaila($adresat, $html, $temat, $from, $ikona = '') {
         $sciezka_serwera = "http://lora.pkc.motherson.com/Oddelegowania/img/";
-        $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
+        $page = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8' /></head>
 <body align='center' background='".$sciezka_serwera."bg_1.jpg'>
 <center>
+" . ($ikona != '' ? "<img src='".$sciezka_serwera.$ikona."'/>" : "") . "
 <h3>Ewidencja nadgodzin</h3>
 <h4>
     $html
 </h4> 
 </center>
 </body></html>";
-        $tresc =<<<KONIEC
-$page
-KONIEC;
-        $naglowki =<<<KONIEC
-From: $from
-Content-Type: text/html
-KONIEC;
-
-        mail( $adresat, $temat, $tresc, $naglowki );
+        $this->WyslijMailHtml($adresat, $temat, $page, $from);
     }
     function PobierzMaileKierownikow($grupy) {
         $polaczenie = $this->MysqliConnect();
@@ -123,91 +124,48 @@ KONIEC;
     }
     function WyslijMailaEwindencjaNadgodzinAnulowaniePozycji($notatka, $mail, $dane_pozycji)
     {
-        $sciezka_serwera = "http://lora.pkc.motherson.com/Oddelegowania/img/";
-        $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-<body align='center' background='".$sciezka_serwera."bg_1.jpg'>
-<center>
-<img src='".$sciezka_serwera."Warning.png'/>
-<h3>Ewidencja nadgodzin</h3>
-<h4>Pracownik Działu Personalnego musiał anulować wpisaną pozycję ze względu na niezgodność<br/>
-Dane pozycji: ".$dane_pozycji."
-Anulowanie pozycji przez: ".$_SESSION['ewnioski_full_name']." ".date('Y-m-d H:i:s')."<br/>
-Z powodu: ".$notatka."
-</h4>
-</center>
-</body></html>";
-        $temat =  'Ewidencja nadgodzin: anulowanie pozycji';
-        $tresc =<<<KONIEC
-$page
-KONIEC;
-        $naglowki =<<<KONIEC
-From: EwidencjaNadgodzinAdmin@motherson.com
-Content-Type: text/html
-KONIEC;
-        $adresat = $mail;
-        $adresat .= ",".$this->DodatkowyMail;
-
-        mail( $adresat, $temat, $tresc, $naglowki );
+        $this->WyslijMaila($mail . "," . $this->DodatkowyMail, "Pracownik Działu Personalnego musiał anulować wpisaną pozycję ze względu na niezgodność<br/>
+Dane pozycji: " . $dane_pozycji . "
+Anulowanie pozycji przez: " . $_SESSION['ewnioski_full_name'] . " " . date('Y-m-d H:i:s') . "<br/>
+Z powodu: " . $notatka, 'Ewidencja nadgodzin: anulowanie pozycji', 'EwidencjaNadgodzinAdmin@motherson.com', 'Warning.png');
     }
     function WyslijMailaEwindencjaNadgodzinEdycjaPozycjiHr($dane_pozycji, $mail)
     {
-        $sciezka_serwera = "http://lora.pkc.motherson.com/Oddelegowania/img/";
-        $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-<body align='center' background='".$sciezka_serwera."bg_1.jpg'>
-<center>
-<img src='".$sciezka_serwera."Edit_pencil.png'/>
-<h3>Ewidencja nadgodzin</h3>
-<h4>Pracownik Działu Personalnego wprowadził korektę pozycji<br/> Nowe dane: ".$dane_pozycji."<br/>
-Edycja pozycji przez: ".$_SESSION['ewnioski_full_name']." ".date('Y-m-d H:i:s')."<br/>
-</h4>
-</center>
-</body></html>";
-        $temat =  'Ewidencja nadgodzin: korekta pozycji';
-        $tresc =<<<KONIEC
-$page
-KONIEC;
-        $naglowki =<<<KONIEC
-From: EwidencjaNadgodzinAdmin@motherson.com
-Content-Type: text/html
-KONIEC;
-        $adresat = $mail.",".$this->DodatkowyMail;
-        mail( $adresat, $temat, $tresc, $naglowki );
+        $this->WyslijMaila($mail . "," . $this->DodatkowyMail, "Pracownik Działu Personalnego wprowadził korektę pozycji<br/> Nowe dane: " . $dane_pozycji . "<br/>
+Edycja pozycji przez: " . $_SESSION['ewnioski_full_name'] . " " . date('Y-m-d H:i:s') . "<br/>", 'Ewidencja nadgodzin: korekta pozycji', 'EwidencjaNadgodzinAdmin@motherson.com', 'Edit_pencil.png');
     }
     function ZapiszGlobalnaModyfikacjeKierownik($ids, $stan) {
-        $polaczenie = $this->MysqliConnect();
-        $ids = explode(",",$ids);
-        $zapisano = 0;
-        foreach($ids as $id) {
-            $zapytanie = "UPDATE godziny_nadliczbowe_godziny SET akceptacja_kierownik='".$stan."', akceptacja_kierownik_user ='".$_SESSION['ewnioski_full_name']."', data_akceptacji_kierownik=now()  WHERE id='".$id."'";
-            mysqli_query($polaczenie, $zapytanie);
-            $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_full_name']);
-            $this->ZapiszLog('Zapytanie;' . $zapytanie, $_SESSION['ewnioski_full_name']);
-            $zapisano += mysqli_affected_rows($polaczenie);
-        }
-        if($zapisano == count($ids)) { ?>
-            <div align="center" style="color: #00aa00"><b>Dane zostały zapisane</b></div>
-        <?php }
-        else { ?>
-            <div style="color: #aa0000"><b>Dane nie zostały zapisane<br/><?php echo mysqli_error($polaczenie); ?></b></div>
-        <?php }
+        $this->ZapiszGlobalnaModyfikacje($ids, $stan, 'akceptacja_kierownik', 'akceptacja_kierownik_user', 'data_akceptacji_kierownik');
     }
     function ZapiszGlobalnaModyfikacjeHR($ids, $stan) {
+        $this->ZapiszGlobalnaModyfikacje($ids, $stan, 'akceptacja_dzial_personalny', 'akceptacja_dzial_personalny_user', 'data_akceptacji_dzial_personalny');
+    }
+    /**
+     * Zmiana akceptacji kilku pozycji nadgodzin naraz
+     * @param string $ids Identyfikatory pozycji oddzielone przecinkami
+     * @param string $stan Nowy stan akceptacji
+     * @param string $poleStanu Kolumna ze stanem akceptacji
+     * @param string $poleUzytkownika Kolumna z osobą akceptującą
+     * @param string $poleDaty Kolumna z datą akceptacji
+     */
+    private function ZapiszGlobalnaModyfikacje($ids, $stan, string $poleStanu, string $poleUzytkownika, string $poleDaty) {
         $polaczenie = $this->MysqliConnect();
-        $ids = explode(",",$ids);
+        $ids = explode(",", (string)$ids);
         $zapisano = 0;
         foreach($ids as $id) {
-            $zapytanie = "UPDATE godziny_nadliczbowe_godziny SET akceptacja_dzial_personalny='".$stan."', akceptacja_dzial_personalny_user='".$_SESSION['ewnioski_full_name']."', data_akceptacji_dzial_personalny=now()  WHERE id='".$id."'";
+            $zapytanie = "UPDATE godziny_nadliczbowe_godziny SET $poleStanu='".$this->Esc($polaczenie, $stan)."', $poleUzytkownika='".$this->Esc($polaczenie, $_SESSION['ewnioski_full_name'])."', $poleDaty=now()  WHERE id='".(int)$id."'";
             mysqli_query($polaczenie, $zapytanie);
             $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_full_name']);
             $this->ZapiszLog('Zapytanie;' . $zapytanie, $_SESSION['ewnioski_full_name']);
             $zapisano += mysqli_affected_rows($polaczenie);
         }
-        if($zapisano == count($ids)) { ?>
-            <div align="center" style="color: #00aa00"><b>Dane zostały zapisane</b></div>
-        <?php }
-        else { ?>
-            <div style="color: #aa0000"><b>Dane nie zostały zapisane<br/><?php echo mysqli_error($polaczenie); ?></b></div>
-        <?php }
+        if($zapisano == count($ids)) {
+            $this->Alert('Dane zostały zapisane', '', 'success');
+        }
+        else {
+            $this->Alert('Dane nie zostały zapisane', htmlspecialchars(mysqli_error($polaczenie)), 'error');
+        }
+        mysqli_close($polaczenie);
     }
     function FilterDatowy() {
         if(!isset($_SESSION['ewnioski_produktywnosc_filter_nadgodziny_data_poczatkowa'])) $_SESSION['ewnioski_produktywnosc_filter_nadgodziny_data_poczatkowa'] = date('Y-m-d',strtotime("now - 1 week"));
@@ -222,8 +180,13 @@ KONIEC;
         </form>
     <?php }
     function ZapiszNotatke($id, $kolumna, $wartosc) {
+        // nazwa kolumny przychodzi z formularza - dopuszczamy tylko kolumny z notatkami
+        if (!in_array($kolumna, ['brygadzista_notatka', 'kierownik_notatka', 'hr_notatka'], true)) {
+            $this->Alert('Dane nie zostały zapisane', 'Nieprawidłowa kolumna notatki.', 'error');
+            return;
+        }
         $polaczenie = $this->MysqliConnect();
-        $zapytanie = "UPDATE godziny_nadliczbowe_godziny SET ".$kolumna."='".$wartosc."' WHERE id='".$id."'";
+        $zapytanie = "UPDATE godziny_nadliczbowe_godziny SET ".$kolumna."='".$this->Esc($polaczenie, $wartosc)."' WHERE id='".(int)$id."'";
         mysqli_query($polaczenie, $zapytanie);
         $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_full_name']);
         $this->ZapiszLog('Zapytanie;' . $zapytanie, $_SESSION['ewnioski_full_name']);
@@ -429,7 +392,6 @@ KONIEC;
         </form>
     <?php }
     function ZmienStatusHr($id, $status) {
-        $this->DomyslneUstawiania();
         $polaczenie = $this->MysqliConnect();
         $zapytanie = "UPDATE godziny_nadliczbowe_godziny SET akceptacja_dzial_personalny='".$status."', akceptacja_dzial_personalny_user='".$_SESSION['ewnioski_full_name']."', data_akceptacji_dzial_personalny=now() WHERE id='".$id."'";
         mysqli_query($polaczenie, $zapytanie);
@@ -1014,7 +976,7 @@ KONIEC;
                 $pracownik = explode("---", $_POST['imie_nazwisko_'.$i]);
 
                 $dostep = false;
-                $grupyx = explode(",", $_SESSION['ewnioski_oddelegowania_mpk']);
+                $grupyx = explode(",", (string)$_SESSION['ewnioski_oddelegowania_mpk']);
                 foreach($grupyx as $grupax) {
                     $grupyz = explode(",", $pracownik[3]);
                     foreach($grupyz as $grupaz) {
@@ -1083,9 +1045,7 @@ KONIEC;
         }
 
         // Mail do kierownika
-        $adres = explode("/", $_SERVER['HTTP_REFERER']);
-        $adres[5] = "akceptacja_nadgodzin.php";
-        $adres = implode("/", $adres);
+        $adres = Konfiguracja::Pobierz('adres_programu') . "akceptacja_nadgodzin.php";
         $mail_tabelka = "<div align='center'><h3>Pracownik: ".$_SESSION['ewnioski_full_name']." wprowadził następujące nadgodziny:
     <br/>Jeżli chcesz je wszystkie zaakceptować kliknij ten link: <a href='".$adres."?formularz=".base64_encode($numer_formularza)."'><span style='color: #aa0000;'>Akceptacja</span></a></h3></div><table align='center' cellspacing='0' cellpadding='0'>".$mail_tabelka."</table>";
         $maile = $this->DodatkowyMail.",".$this->PobierzMaileKierownikow($_SESSION['ewnioski_oddelegowania_mpk']);
@@ -1113,7 +1073,7 @@ KONIEC;
     <?php }
     function GuzikEksportExcel($zapytanie) { ?>
         <form action="" method="post">
-            <input type="hidden" name="excel_export" value="<?php echo base64_encode($zapytanie); ?>">
+            <input type="hidden" name="excel_export" value="<?php echo $this->ZapamietajZapytanie($zapytanie); ?>">
             <input type="submit" value="Eksport do Excela">
         </form>
     <?php }
@@ -1406,7 +1366,7 @@ KONIEC;
             $polaczenie = $this->MysqliConnect();
 
             if(!isset($_SESSION['ewnioski_produktywnosc_filter_nadgodziny_offset'])) $_SESSION['ewnioski_produktywnosc_filter_nadgodziny_offset'] = 0;
-            if(isset($_GET['offset'])) $_SESSION['ewnioski_produktywnosc_filter_nadgodziny_offset'] =  $_GET['offset'];
+            if(isset($_GET['offset'])) $_SESSION['ewnioski_produktywnosc_filter_nadgodziny_offset'] = max(0, (int)$_GET['offset']);
 
             $licznik = 1;
             $dodatkowy_warunek = "";
@@ -1432,12 +1392,12 @@ KONIEC;
                 // $dodatkowy_warunek.="  go.profil='".$_SESSION['ewnioski_profil']."'";
                 $q1 = "SELECT numer_ewidencyjny FROM ewnioski.stan_godzin WHERE numer_kierownik='".trim($_SESSION['ewnioski_login'])."' ORDER BY id DESC ";
                 $e1 = mysqli_query($polaczenie, $q1) ;
-                $this->BladZapytania($polaczenie, $e1, $_SESSION['ewnioski_login']);
+                $this->BladZapytania($polaczenie, $q1, $_SESSION['ewnioski_login']);
                 while($d1 = mysqli_fetch_assoc($e1)) {
                     $dodatkowy_warunek_widocznosc .= " OR go.numer_ewidencyjny like '%".$d1['numer_ewidencyjny']."%'";
                 }
 
-                $grup = explode(",", $_SESSION['ewnioski_oddelegowania_mpk']);
+                $grup = explode(",", (string)$_SESSION['ewnioski_oddelegowania_mpk']);
                 foreach($grup as $grup_element) {
                     if(strlen(trim($grup_element)) > 0) {
                         $dodatkowy_warunek_widocznosc .= " OR go.oddelegowania_grupa like '%".$grup_element."%'";
@@ -1523,7 +1483,7 @@ KONIEC;
                         else $kolor = "#8e8e8e";
                     }
                     $dostep = false;
-                    $grupyx = explode(",",$_SESSION['ewnioski_oddelegowania_mpk']);
+                    $grupyx = explode(",", (string)$_SESSION['ewnioski_oddelegowania_mpk']);
 
                     foreach($grupyx as $grupax) {
                         // var_dump($grupax);
@@ -1650,7 +1610,7 @@ KONIEC;
                                 <?php
 
                             }
-                            else echo ucfirst($dane->akceptacja_kierownik);
+                            else echo ucfirst((string)$dane->akceptacja_kierownik);
                             ?>
                         </td>
                         <td align="center" style="background-color: <?php echo $kolor; ?>" class="padding_5_all bottom right row_color_<?php echo $licznik; ?>">
@@ -1675,7 +1635,7 @@ KONIEC;
                                     <img src="../img/x.png" style="cursor: hand; cursor: pointer;" title="Jeśli chcesz anulować tą pozycję kliknij mnie" onclick="if(confirm('Czy na pewno chcesz anulować tą pozycję?')) $(this).parent().submit(); "/>
                                 </form>
                             <?php }
-                            else echo ucfirst($dane->akceptacja_dzial_personalny);
+                            else echo ucfirst((string)$dane->akceptacja_dzial_personalny);
                             ?>
                         </td>
                         <td align="center" style="background-color: <?php echo $kolor; ?>" class="padding_5_all bottom right row_color_<?php echo $licznik; ?>">

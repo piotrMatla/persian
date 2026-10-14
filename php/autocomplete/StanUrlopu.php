@@ -5,10 +5,7 @@
  * Date: 18.01.2019
  * Time: 12:01
  */
-function __autoload($x)
-{
-    require_once("../klasy/$x.php");
-}
+require_once dirname(__DIR__) . '/bootstrap.php';
 $a = new Common;
 $a->UstawieniaStandardowe();
 $polaczenie=$a->MysqliConnect();

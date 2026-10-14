@@ -9,12 +9,7 @@
 /**
  * Główny plik programu
  */
-set_include_path(get_include_path().PATH_SEPARATOR.__DIR__.'/klasy');
-spl_autoload_register(function ($class) {
-    foreach(explode(PATH_SEPARATOR,get_include_path()) as $path) {
-        if(file_exists($path."/".$class.".php")) require_once($path."/".$class.".php");
-    }
-});
+require_once __DIR__ . '/bootstrap.php';
 
 $a = new Common;
 $m = new Modyfikuj;
@@ -64,12 +59,7 @@ if(isset($_POST['id_cofnij_kierownik']))
     $r->CofnijUrlop();
 }
 $h->PoczatekStronyDotyk();
-?>
-<tr>
-        <td colspan="6" align="center"><?php
-            if (isset($_SESSION['ewnioski_komunikat'])) {
-                $a->WyswietlKomunikat();
-            }
+$a->WyswietlKomunikat();
 if(isset($_GET['dodaj_urlop']))
 {
     $m->FormularzNowyWniosekDotyk();
@@ -93,6 +83,4 @@ elseif (isset($_GET['stan_godzin']))
 else{
     $h->LogoWDotyk();
 }
-            ?>
-      <?php
 $h->KoniecStronyDotyk();

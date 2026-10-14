@@ -9,16 +9,10 @@
 /**
  * Podpowiadanie numerów MPK
  */
-function __autoload($x)
-{
-    require_once("klasy/$x.php");
-}
+require_once __DIR__ . '/bootstrap.php';
 
 $a = new Common;
 
-if (isset($_POST['lang'])) {
-    $a->UstawJezyk();
-}
 $a->UstawieniaStandardowe();
 $polaczenie = $a->MysqliConnect();
 //Podpowiadanie głównego MPK-u z bazy

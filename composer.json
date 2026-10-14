@@ -1,0 +1,21 @@
+{
+    "name": "pkc/ewnioski",
+    "description": "eWnioski - wnioski urlopowe, zwolnienia i nadgodziny",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.2",
+        "ext-mysqli": "*",
+        "ext-mbstring": "*",
+        "ext-iconv": "*",
+        "phpoffice/phpspreadsheet": "^5.0",
+        "setasign/fpdf": "^1.8"
+    },
+    "config": {
+        "platform": {
+            "php": "8.5.0"
+        },
+        "sort-packages": true,
+        "optimize-autoloader": true
+    }
+}

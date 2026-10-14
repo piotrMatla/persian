@@ -22,14 +22,14 @@ class Modyfikuj extends Common
 FROM stan_godzin
 where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_importu desc limit 1";
             $wykonaj = mysqli_query($polaczenie, $zapytanieurlop);
-            $this->BladZapytania($polaczenie, $wykonaj, $_SESSION['ewnioski_login']);
-            $wynik = mysqli_fetch_row($wykonaj);
+            $this->BladZapytania($polaczenie, $zapytanieurlop, $_SESSION['ewnioski_login']);
+            $wynik = mysqli_fetch_row($wykonaj) ?? array_fill(0, 10, null);
             $imie=$wynik['2'].' '.$wynik['1'];
-            $stanurlopu = number_format($wynik['3'], 0);
-            $stangodzin = number_format($wynik['4'], 1);
-            $urlopzalegly = number_format($wynik['5'], 0);
-        $uz = number_format($wynik['6'], 0);
-        $stanurlopugodziny = number_format($wynik['7'], 0);
+            $stanurlopu = $this->Liczba($wynik[3], 0);
+            $stangodzin = $this->Liczba($wynik[4], 1);
+            $urlopzalegly = $this->Liczba($wynik[5], 0);
+        $uz = $this->Liczba($wynik[6], 0);
+        $stanurlopugodziny = $this->Liczba($wynik[7], 0);
         ?>
         <form method="POST" action="modyfikuj.php?wpisz" id="form_1" >
         <table border="0" align="center">
@@ -291,7 +291,7 @@ else $strona='raporty.php?urlop';
         if ($_POST['liczba_godzin'] != '') {
             $_POST['koniec_urlopu'] = $_POST['poczatek_urlopu'];
         }
-        $wpiszgodzinyenova=abs($_POST['liczba_godzin']);
+        $wpiszgodzinyenova=abs((float)$_POST['liczba_godzin']);
         $poczatek = strtotime($_POST['poczatek_urlopu']);
         $koniec = strtotime($_POST['koniec_urlopu']);
         $miesiacpoczatek = date('m', $poczatek);
@@ -358,7 +358,7 @@ else $strona='raporty.php?urlop';
                     $this->BladZapytania($polaczenie, $zapytaniespr, $_SESSION['ewnioski_login']);
                     $danespr = mysqli_fetch_row($wykonajspr);
                     if ($danespr != '' or $danespr===NULL) {
-                        if ($danespr[1] == 0) {
+                        if (($danespr[1] ?? null) == 0) {
                             $datazapytanie2 = date('Y-m-d', $tymdataliczba);
                             $zapytaniespr2 = "SELECT dzien,stale  FROM dni_wolne WHERE  DATE_FORMAT(dzien, '%Y-%m-%d')='" . $datazapytanie2 . "'";
                             $wykonajspr2 = mysqli_query($polaczenie, $zapytaniespr2);
@@ -382,12 +382,7 @@ else $strona='raporty.php?urlop';
                         $_SESSION['ewnioski_komunikat'] = '<font color="red"><h1>Wystąpił błąd podczas wpisywania urlopu. <br>Liczba urlopu dostępnego jest mniejsza niż chcesz wypisać.<br>Liczba dni dostępnych: ' . $_POST['stan_urlopu'] . ' <br>a wpisano: ' . $liczbadnieksport . '  </h1></font>';
                         if (isset($_GET['dotyk'])) $strona = "dotyk.php?dodaj_urlop";
                         else $strona = "modyfikuj.php?urlop";
-                        ?>
-                        <script type="text/javascript">
-                            (window.location = '<?php echo $strona?>');
-                        </script>
-                        <?php
-                        exit;
+                        $this->Przekieruj($strona);
                     }
 
             }
@@ -433,12 +428,7 @@ else $strona='raporty.php?urlop';
                 $_SESSION['ewnioski_komunikat'] = '<font color="red"><h1>Dla tej osoby w tych dniach jest już wpisany wniosek urlopowy.</br> Program nie pozwala wpisać dwóch wniosków w tym samym czasie dla jednej osoby </h1></font>';
                 mysqli_close($polaczenie);
                 $strona = "modyfikuj.php?urlop";
-        ?>
-        <script type="text/javascript">
-            (window.location = '<?php echo $strona ?>');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj($strona);
             }
             $zapytanie = "INSERT INTO wniosek (id_kategorii, data_wpisania, osoba_wpisujaca, imie_nazwisko, poczatek_wolnego, koniec_wolnego,  liczba_dni_eksport, imie_dziecka, data_urodzenia_dziecka, numer_ewidencyjny,
  dane_mpk, id_status, numer_ewidencyjny_wpisujacy,przyczyna,stopien_pokrewienstwa,profil,adres_zamieszkania,liczba_godzin_enova $poleprzelozony )
@@ -454,16 +444,7 @@ else $strona='raporty.php?urlop';
                     $adresat = $_SESSION['ewnioski_mail'] . ',' . $_SESSION['ewnioski_mail_kierownik'];
                     $osoba = $_POST['imie_nazwisko'];
                     $przedzial = $_POST['poczatek_urlopu'] . " - " . $_POST['koniec_urlopu'];
-                    $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Wpisano nowy wniosek urlopowy dla osoby: $osoba .<br>W przedziale czasowym   $przedzial</h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://lora.pkc.motherson.com/eWnioski/php/raporty.php?urlop > eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
-
-                    $this->Wyslij($adresat, 'Wpisano nowy wniosek urlopowy', $page);
+                    $this->WyslijMailNowyWniosek($adresat, 'urlopowy', $osoba, $przedzial, 'urlop');
                 }
             }
         } else {
@@ -509,15 +490,7 @@ else $strona='raporty.php?urlop';
                                 $adresat = $_SESSION['ewnioski_mail'] . ',' . $_SESSION['ewnioski_mail_kierownik'];
                                 $osoba = $_POST['imie_nazwisko'];
                                 $przedzial = $_POST['poczatek_urlopu'] . " - " . $_POST['koniec_urlopu'];
-                                $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Wpisano nowy wniosek urlopowy dla osoby: $osoba .<br>W przedziale czasowym   $przedzial</h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://lora.pkc.motherson.com/eWnioski/php/raporty.php?urlop > eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
-                                $this->Wyslij($adresat, 'Wpisano nowy wniosek urlopowy', $page);
+                                $this->WyslijMailNowyWniosek($adresat, 'urlopowy', $osoba, $przedzial, 'urlop');
                             }
                         }
 
@@ -540,15 +513,7 @@ else $strona='raporty.php?urlop';
                             $adresat = $_SESSION['ewnioski_mail'] . ',' . $_SESSION['ewnioski_mail_kierownik'];
                             $osoba = $_POST['imie_nazwisko'];
                             $przedzial = $_POST['poczatek_urlopu'] . " - " . $_POST['koniec_urlopu'];
-                            $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Wpisano nowy wniosek urlopowy dla osoby: $osoba .<br>W przedziale czasowym   $przedzial</h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://lora.pkc.motherson.com/eWnioski/php/raporty.php?urlop > eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
-                            $this->Wyslij($adresat, 'Wpisano nowy wniosek urlopowy', $page);
+                            $this->WyslijMailNowyWniosek($adresat, 'urlopowy', $osoba, $przedzial, 'urlop');
                         }
                     }
                 }
@@ -559,12 +524,7 @@ else $strona='raporty.php?urlop';
         }
 
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = '<?php echo $strona ?>');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj($strona);
     }
 
     /**
@@ -578,13 +538,13 @@ else $strona='raporty.php?urlop';
 FROM stan_godzin
 where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_importu desc limit 1";
         $wykonaj = mysqli_query($polaczenie, $zapytanieurlop);
-        $this->BladZapytania($polaczenie, $wykonaj, $_SESSION['ewnioski_login']);
-        $wynik = mysqli_fetch_row($wykonaj);
+        $this->BladZapytania($polaczenie, $zapytanieurlop, $_SESSION['ewnioski_login']);
+        $wynik = mysqli_fetch_row($wykonaj) ?? array_fill(0, 10, null);
         $imie=$wynik['2'].' '.$wynik['1'];
-        $stanurlopu = number_format($wynik['3'], 0);
-        $stangodzin = number_format($wynik['4'], 1);
-        $urlopzalegly = number_format($wynik['5'], 0);
-        $uz = number_format($wynik['6'], 0);
+        $stanurlopu = $this->Liczba($wynik[3], 0);
+        $stangodzin = $this->Liczba($wynik[4], 1);
+        $urlopzalegly = $this->Liczba($wynik[5], 0);
+        $uz = $this->Liczba($wynik[6], 0);
 
         ?>
 
@@ -925,6 +885,8 @@ where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_im
         if(!isset($_POST['godzina_rozpoczecia']))$_POST['godzina_rozpoczecia']='';
         if(!isset($_POST['powod']))$_POST['powod']='';
         if(!isset($_POST['zmiana_czasu']))$_POST['zmiana_czasu']='';
+        if(!isset($_POST['data_zwolnienia']))$_POST['data_zwolnienia']='';
+        if(!isset($_POST['liczba_godzin']))$_POST['liczba_godzin']='';
 
         // --- Złożenie godziny rozpoczęcia z dwóch selectów (godzina + 00/30 min) w jedno pole godzina_rozpoczecia ---
         // Pola pochodzą z selectów godzina_rozpoczecia_h / godzina_rozpoczecia_m w FormularzZwolnienie()
@@ -1087,16 +1049,7 @@ where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_im
                         // $adresat = "pawel.dabrowski@motherson.com";
                         $osoba = $_POST['imie_nazwisko'];
                         $przedzial = trim($Daty['data_poczatkowa']) . "   " . trim($Daty['data_koncowa']);
-                        $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                            <body align='center'>
-                            <center>
-                            <h2>Wpisano nowy wniosek zwolnienia z godzin, zmiany czasu pracy lub pracy zdalnej dla osoby: $osoba .<br>W przedziale czasowym   $przedzial</h2><br>
-                            Aby przejść do programu naciśnij następujący link do <a href=http://lora.pkc.motherson.com/eWnioski/php/raporty.php?urlop > eWniosków</a>
-                             </center>
-                             </body></html>
-                             ";
-
-                        $this->Wyslij($adresat, 'Wpisano nowy wniosek zwolnienia/ zmiany czasu/ pracy zdalnej', $page);
+                        $this->WyslijMailNowyWniosek($adresat, 'zwolnienia z godzin, zmiany czasu pracy lub pracy zdalnej', $osoba, $przedzial, 'zwolnienia');
                     }
                 }
             }
@@ -1115,27 +1068,13 @@ where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_im
                     $adresat = $_SESSION['ewnioski_mail'] . ',' . $_SESSION['ewnioski_mail_kierownik'];
                     $osoba = $_POST['imie_nazwisko'];
                     $przedzial = $_POST['data_zwolnienia'] . "   " . $_POST['zmiana_czasu'];
-                    $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                    <body align='center'>
-                                    <center>
-                                    <h2>Wpisano nowy wniosek zwolnienia z godzin, zmiany czasu pracy lub pracy zdalnej dla osoby: $osoba .<br>W przedziale czasowym   $przedzial</h2><br>
-                                    Aby przejść do programu naciśnij następujący link do <a href=http://lora.pkc.motherson.com/eWnioski/php/raporty.php?urlop > eWniosków</a>
-                                     </center>
-                                    </body></html>
-                                    ";
-
-                    $this->Wyslij($adresat, 'Wpisano nowy wniosek zwolnienia/ zmiany czasu/ pracy zdalnej', $page);
+                    $this->WyslijMailNowyWniosek($adresat, 'zwolnienia z godzin, zmiany czasu pracy lub pracy zdalnej', $osoba, $przedzial, 'zwolnienia');
                 }
             }
         }
 
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = '<?php echo $strona; ?>');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj($strona);
     }
 
     /**
@@ -1149,13 +1088,13 @@ where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_im
 FROM stan_godzin
 where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_importu desc limit 1";
         $wykonaj = mysqli_query($polaczenie, $zapytanieurlop);
-        $this->BladZapytania($polaczenie, $wykonaj, $_SESSION['ewnioski_login']);
-        $wynik = mysqli_fetch_row($wykonaj);
+        $this->BladZapytania($polaczenie, $zapytanieurlop, $_SESSION['ewnioski_login']);
+        $wynik = mysqli_fetch_row($wykonaj) ?? array_fill(0, 10, null);
         $imie=$wynik['2'].' '.$wynik['1'];
-        $stanurlopu = number_format($wynik['3'], 0);
-        $stangodzin = number_format($wynik['4'], 1);
-        $urlopzalegly = number_format($wynik['5'], 0);
-        $uz = number_format($wynik['6'], 0);
+        $stanurlopu = $this->Liczba($wynik[3], 0);
+        $stangodzin = $this->Liczba($wynik[4], 1);
+        $urlopzalegly = $this->Liczba($wynik[5], 0);
+        $uz = $this->Liczba($wynik[6], 0);
 
         ?>
         <form method="POST" action="modyfikuj.php?wpiszzwolnienie" id="form_1">
@@ -1344,17 +1283,17 @@ where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_im
 FROM stan_godzin
 where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_importu desc limit 1";
         $wykonaj = mysqli_query($polaczenie, $zapytanieurlop);
-        $this->BladZapytania($polaczenie, $wykonaj, $_SESSION['ewnioski_login']);
-        $wynik = mysqli_fetch_row($wykonaj);
+        $this->BladZapytania($polaczenie, $zapytanieurlop, $_SESSION['ewnioski_login']);
+        $wynik = mysqli_fetch_row($wykonaj) ?? array_fill(0, 10, null);
         $imie=$wynik['2'].' '.$wynik['1'];
         if($wynik['3']===NULL) $stanurlopu='Pracownik agencyjny';
         else {
-            $stanurlopu = number_format($wynik['3'], 0);
+            $stanurlopu = $this->Liczba($wynik[3], 0);
         }
 
-        $stangodzin = number_format($wynik['4'], 1);
-        $urlopzalegly = number_format($wynik['5'], 0);
-        $uz = number_format($wynik['6'], 0);
+        $stangodzin = $this->Liczba($wynik[4], 1);
+        $urlopzalegly = $this->Liczba($wynik[5], 0);
+        $uz = $this->Liczba($wynik[6], 0);
         ?>
         <form method="POST" action="modyfikuj.php?wpisz&dotyk" id="form_1">
         <table border="0" align="center">
@@ -1603,13 +1542,13 @@ where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_im
 FROM stan_godzin
 where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_importu desc limit 1";
         $wykonaj = mysqli_query($polaczenie, $zapytanieurlop);
-        $this->BladZapytania($polaczenie, $wykonaj, $_SESSION['ewnioski_login']);
-        $wynik = mysqli_fetch_row($wykonaj);
+        $this->BladZapytania($polaczenie, $zapytanieurlop, $_SESSION['ewnioski_login']);
+        $wynik = mysqli_fetch_row($wykonaj) ?? array_fill(0, 10, null);
         $imie=$wynik['2'].' '.$wynik['1'];
-        $stanurlopu = number_format($wynik['3'], 0);
-        $stangodzin = number_format($wynik['4'], 1);
-        $urlopzalegly = number_format($wynik['5'], 0);
-        $uz = number_format($wynik['6'], 0);
+        $stanurlopu = $this->Liczba($wynik[3], 0);
+        $stangodzin = $this->Liczba($wynik[4], 1);
+        $urlopzalegly = $this->Liczba($wynik[5], 0);
+        $uz = $this->Liczba($wynik[6], 0);
 
         ?>
         <form method="POST" action="modyfikuj.php?wpiszzwolnienie&dotyk" id="form_1">
@@ -1815,7 +1754,7 @@ where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'   order by data_im
 FROM zwolnienie
 where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'  and id_kategorii IN(17,18)  and poczatek_pracy_zdalnej<='$dzis' and koniec_pracy_zdalnej>='$dzis'";
         $wykonaj = mysqli_query($polaczenie, $zapytaniezdalna);
-        $this->BladZapytania($polaczenie, $wykonaj, $_SESSION['ewnioski_login']);
+        $this->BladZapytania($polaczenie, $zapytaniezdalna, $_SESSION['ewnioski_login']);
         $wynik = mysqli_fetch_row($wykonaj);
         if($wynik===NULL)
         {
@@ -1835,7 +1774,7 @@ where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'  and id_kategorii 
             FROM rozpoczecie_pracy_zdalnej
             where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "' and  data_rozpoczecia_pracy like '$dzis%' order by id desc";
             $wykonaj = mysqli_query($polaczenie, $zapytaniezdalna);
-            $this->BladZapytania($polaczenie, $wykonaj, $_SESSION['ewnioski_login']);
+            $this->BladZapytania($polaczenie, $zapytaniezdalna, $_SESSION['ewnioski_login']);
             $wynik = mysqli_fetch_row($wykonaj);
             if($wynik===NULL)
             {
@@ -1976,19 +1915,14 @@ where numer_ewidencyjny='" . $_SESSION['ewnioski_login'] . "'  and id_kategorii 
     {
         $polaczenie = $this->MysqliConnect();
         $zapytanie = "INSERT INTO rozpoczecie_pracy_zdalnej (numer_ewidencyjny, data_rozpoczecia_pracy, typ_akcji, uzytkownik_wpisujacy, data_wpisu,profil)
-           values ('".trim($_SESSION['ewnioski_login'])."',now(),'".$wartosc."' ,'".trim( $_SESSION['ewnioski_login'])."',now(),'" . trim($_SESSION['ewnioski_profil_wpisz_dane'])."') ";
+           values ('".trim($_SESSION['ewnioski_login'])."',now(),'".(int)$wartosc."' ,'".trim( $_SESSION['ewnioski_login'])."',now(),'" . trim($_SESSION['ewnioski_profil_wpisz_dane'])."') ";
         $wykonaj = mysqli_query($polaczenie, $zapytanie);
         $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_full_name']);
         $this->ZapiszLog('Zapytanie;' . $zapytanie, $_SESSION['ewnioski_full_name']);
         if (mysqli_affected_rows($polaczenie) > 0) {
             $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Rozpoczęcie/zakończenie/wstrzymanei pracy zostało odnotowane</h3></font>';
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'modyfikuj.php?rozpocznij_zdalna');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('modyfikuj.php?rozpocznij_zdalna');
         }
     }
 

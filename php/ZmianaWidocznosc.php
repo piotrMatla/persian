@@ -10,9 +10,7 @@
  * @param string $x Lista kolumn do ukrycia
  */
 
-function __autoload($x) {
-    require_once("klasy/$x.php");
-}
+require_once __DIR__ . '/bootstrap.php';
 
 $a = new Common;
 $a->UstawieniaStandardowe();

@@ -5,12 +5,7 @@
  * Date: 11.05.2023
  * Time: 11:06
  */
-set_include_path(get_include_path().PATH_SEPARATOR.__DIR__);
-spl_autoload_register(function ($class) {
-    foreach(explode(PATH_SEPARATOR,get_include_path()) as $path) {
-        if(file_exists($path."/klasy/".$class.".php")) require_once($path."/klasy/".$class.".php");
-    }
-});
+require_once __DIR__ . '/bootstrap.php';
 $d = new Dokumenty;
 $a = new Common;
 $h = new HTML;
@@ -27,11 +22,6 @@ if(isset($_POST['zalacznik']))
 }
 $f->UstawienieSortowaniaFiltrow();
 $h->PoczatekStrony();
-?><tr>
-    <td colspan="7" align="center"><?php
-        $d->PierwszyWierszTablica();//
-        $d->DanePliki();
-        ?>
-    </td>
-    </tr><?php
+$d->PierwszyWierszTablica();
+$d->DanePliki();
 $h->KoniecStronyRaporty();

@@ -6,277 +6,324 @@
  * Time: 13:10
  */
 
+/**
+ * Szkielet stron: nagłówki, menu boczne, ekran logowania i strona główna
+ */
 class HTML extends Common
 {
+    /**
+     * Ścieżki SVG ikon (viewBox 0 0 24 24, obrys w kolorze tekstu)
+     */
+    const IKONY = [
+        'home' => '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
+        'urlop' => '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+        'zwolnienie' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+        'zdalna' => '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+        'start' => '<circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z"/>',
+        'nadgodziny' => '<path d="M12 8v4l3 2"/><path d="M3.05 11a9 9 0 1 1 .5 4"/><path d="M3 4v5h5"/>',
+        'raport' => '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+        'osoby' => '<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M22 20c0-3-2-5.2-5-5.8"/>',
+        'import' => '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/>',
+        'zastepca' => '<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-6 7-6 1.5 0 2.8.3 3.9.9"/><path d="M16 17l2 2 4-4"/>',
+        'instrukcja' => '<path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/>',
+        'dokumenty' => '<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+        'wejscia' => '<path d="M10 17l5-5-5-5M15 12H3"/><path d="M14 3h6v18h-6"/>',
+        'wyloguj' => '<path d="M14 7l5 5-5 5M19 12H8"/><path d="M10 3H4v18h6"/>',
+        'szukaj' => '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+        'gwiazda' => '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+    ];
+
+    /**
+     * Pozycje menu. Grupy: kategoria 'prod' - wnioski i raporty pracownika, 'admin' - funkcje działu HR.
+     * @return array Lista grup [tytuł, pozycje]
+     */
+    function Menu(): array
+    {
+        $menu = [
+            ['Wnioski', [
+                ['modyfikuj.php', 'urlop', 'Wniosek urlopowy', 'urlop', 'prod', 'Urlop wypoczynkowy, na żądanie, okolicznościowy, opieka nad dzieckiem i inne nieobecności.'],
+                ['modyfikuj.php', 'zwolnienie', 'Zwolnienie z godzin / zmiana czasu', 'zwolnienie', 'prod', 'Zwolnienie z części dnia pracy z odpracowaniem albo zmiana godzin pracy.'],
+                ['modyfikuj.php', 'zdalna', 'Praca zdalna', 'zdalna', 'prod', 'Wniosek o pracę zdalną okazjonalną lub hybrydową.'],
+                ['modyfikuj.php', 'rozpocznij_zdalna', 'Rozpocznij / zakończ pracę zdalną', 'start', 'prod', 'Zarejestrowanie rozpoczęcia, przerwy i zakończenia pracy zdalnej.'],
+                ['rozliczenie_nadgodzin.php', '', 'Rozliczenie nadgodzin', 'nadgodziny', 'prod', 'Polecenia pracy w godzinach nadliczbowych i ich akceptacja.'],
+            ]],
+            ['Raporty', [
+                ['raporty.php', 'urlop', 'Raport urlopów', 'raport', 'prod', 'Wnioski urlopowe, akceptacja przez przełożonego i HR, wydruk PDF.'],
+                ['raporty.php', 'zwolnienia', 'Raport zwolnień / zmiany czasu', 'raport', 'prod', 'Wnioski o zwolnienie z godzin i zmianę czasu pracy.'],
+                ['raporty.php', 'stan_urlopu', 'Stan urlopu i nadgodzin', 'raport', 'prod', 'Aktualny stan urlopu, urlopu zaległego i nadgodzin pracowników.'],
+                ['raporty.php', 'wejscia', 'Stan wejść i wyjść', 'wejscia', 'prod', 'Wejścia i wyjścia pracowników z systemu RCP.'],
+                ['raporty.php', 'odbicia', 'Raport odbić', 'wejscia', 'prod', 'Odbicia kart na kołowrotkach i czytnikach RCP.'],
+                ['raporty.php', 'praca_zdalna', 'Raport pracy zdalnej', 'raport', 'prod', 'Zarejestrowane rozpoczęcia i zakończenia pracy zdalnej.'],
+                ['raporty.php', 'praca_zdalna_czas_pracy', 'Praca zdalna - czas pracy', 'raport', 'prod', 'Czas pracy zdalnej w poszczególnych dniach.'],
+            ]],
+        ];
+        if ($this->JestHR()) {
+            $menu[] = ['Administracja HR', [
+                ['raporty.php', 'wszystkie', 'Wszystkie osoby', 'osoby', 'admin', 'Lista wszystkich osób w eWnioskach z przełożonymi i uprawnieniami.'],
+                ['raporty.php', 'wczytaj_urlop', 'Wczytaj liczbę urlopu', 'import', 'admin', 'Import stanu urlopu i nadgodzin z arkusza Excel.'],
+                ['raporty.php', 'sprawdz_zastepce', 'Sprawdź zastępcę', 'zastepca', 'admin', 'Zastępcy przełożonych i pisanie wniosków za innych pracowników.'],
+            ]];
+        }
+        $menu[] = ['Pomoc', [
+            ['index.php', 'tym=1', 'Instrukcja', 'instrukcja', 'prod', 'Instrukcja obsługi programu eWnioski.'],
+            ['dokumenty.php', '', 'Dokumenty i wnioski', 'dokumenty', 'prod', 'Wzory dokumentów i wniosków do pobrania.'],
+        ]];
+        return $menu;
+    }
+
+    /**
+     * Ikona SVG
+     */
+    function Ikona(string $nazwa, int $rozmiar = 18): string
+    {
+        return '<svg width="' . $rozmiar . '" height="' . $rozmiar . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+            . (self::IKONY[$nazwa] ?? '') . '</svg>';
+    }
+
+    /**
+     * Adres pozycji menu
+     */
+    private function AdresPozycji(array $pozycja): string
+    {
+        return $pozycja[0] . ($pozycja[1] !== '' ? '?' . $pozycja[1] : '');
+    }
+
+    /**
+     * Czy pozycja menu odpowiada aktualnej stronie
+     */
+    private function CzyAktywna(array $pozycja): bool
+    {
+        if (basename($_SERVER['PHP_SELF'] ?? '') !== $pozycja[0]) return false;
+        if ($pozycja[1] === '') return true;
+        [$klucz, $wartosc] = array_pad(explode('=', $pozycja[1], 2), 2, null);
+        return isset($_GET[$klucz]) && ($wartosc === null || $_GET[$klucz] == $wartosc);
+    }
+
+    /**
+     * Tytuł bieżącej strony na podstawie menu
+     */
+    private function TytulStrony(): string
+    {
+        foreach ($this->Menu() as [, $pozycje]) {
+            foreach ($pozycje as $pozycja) {
+                if ($this->CzyAktywna($pozycja)) return $pozycja[2];
+            }
+        }
+        return 'Strona główna';
+    }
+
+    /**
+     * Wspólny nagłówek HTML wszystkich stron
+     * @param string $tytul Tytuł w karcie przeglądarki
+     * @param array $skrypty Dodatkowe skrypty (ścieżki względem php/)
+     * @param array $style Dodatkowe arkusze stylów
+     */
+    function NaglowekHtml(string $tytul, array $skrypty = [], array $style = []): void
+    {
+        ?>
+        <!DOCTYPE html>
+        <html lang="pl">
+        <head>
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <title><?php echo htmlspecialchars($tytul); ?></title>
+            <script>
+                (function () {
+                    try {
+                        var motyw = localStorage.getItem('ewnioski-motyw');
+                        if (motyw === 'dark' || (motyw === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                            document.documentElement.classList.add('dark');
+                        }
+                    } catch (e) {}
+                })();
+            </script>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"/>
+            <?php foreach ($style as $arkusz) { ?>
+                <link rel="stylesheet" type="text/css" href="<?php echo $arkusz; ?>"/>
+            <?php } ?>
+            <link rel="stylesheet" type="text/css" href="../css/app.css?v=<?php echo @filemtime(EWNIOSKI_ROOT . '/css/app.css'); ?>"/>
+            <?php foreach ($skrypty as $skrypt) { ?>
+                <script type="text/javascript" src="<?php echo $skrypt; ?>"></script>
+            <?php } ?>
+            <script type="text/javascript" src="../js/app.js?v=<?php echo @filemtime(EWNIOSKI_ROOT . '/js/app.js'); ?>" defer></script>
+        </head>
+        <?php
+    }
+
+    /**
+     * Przełącznik trybu ciemnego
+     */
+    function PrzelacznikMotywu(): void
+    {
+        ?>
+        <div class="sidebar-footer">
+            <span>Tryb ciemny</span>
+            <button type="button" class="toggle" aria-pressed="false" aria-label="Tryb ciemny" data-przelacznik-motywu>
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
+        <?php
+    }
+
+    /**
+     * Logo programu
+     */
+    function Logo(): void
+    {
+        ?>
+        <div class="brand">
+            <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+                <rect width="28" height="28" rx="8" fill="var(--red)"/>
+                <path d="M8 9h12M8 14h12M8 19h7" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+            <span class="brand-name">eWnioski</span>
+        </div>
+        <?php
+    }
 
     /**
      * Wyświetlenie formularza do logowania
      */
     function PoczatekStronyLogowanie()
     {
+        $this->NaglowekHtml('eWnioski ' . date("Y"));
         ?>
-        <!DOCTYPE html>
-        <html xmlns="http://www.w3.org/1999/html">
-        <head>
-            <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-            <meta http-equiv="Page-Enter" content="RevealTrans(Duration=1,Transition=23)"/>
-            <link rel="stylesheet" type="text/css" href="../css/style.css"/>
-            <title>eWnioski <?php echo date("Y"); ?></title>
-        </head>
-        <body align="center" valign="middle" class="login" onload="SetFocus('login')"   >
-                       <?php
+        <body class="auth-page">
+        <main class="auth-shell">
+        <?php
     }
-     function PoczatekStronyLogowanieDotyk()
+
+    function PoczatekStronyLogowanieDotyk()
+    {
+        $this->NaglowekHtml('eWnioski ' . date("Y"), ['../js/Common.js?6']);
+        ?>
+        <body class="auth-page" onclick="WyczyscLicznik()">
+        <?php $this->LicznikWylogowania(60); ?>
+        <main class="auth-shell">
+        <?php
+    }
+
+    /**
+     * Licznik automatycznego wylogowania na ekranach dotykowych
+     * @param int $sekundy Czas do wylogowania
+     */
+    function LicznikWylogowania(int $sekundy): void
     {
         ?>
-        <!DOCTYPE html>
-        <html xmlns="http://www.w3.org/1999/html">
-        <head>
-            <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-            <meta http-equiv="Page-Enter" content="RevealTrans(Duration=1,Transition=23)"/>
-            <link rel="stylesheet" type="text/css" href="../css/style.css"/>
-            <title>eWnioski <?php echo date("Y"); ?></title>
-            <script type="text/javascript" src="../js/Common.js?6"></script>
-               <script>
-
-
-startday = new Date();
-clockStart = startday.getTime();
-function initStopwatch()
-{
- var myTime = new Date();
-        var timeNow = myTime.getTime();
-        var timeDiff = timeNow - clockStart;
-        this.diffSecs = timeDiff/1000;
-        return(this.diffSecs);
-}
-function getSecs()
-{
-        var mySecs = initStopwatch();
-        var mySecs1 = ""+mySecs;
-        var $pozostalo=document.getElementById('pozostalo').value;
-        $pozostalo=$pozostalo-1;
-        document.getElementById('pozostalo').value=$pozostalo;
-        mySecs1= mySecs1.substring(0,mySecs1.indexOf("."));
-        document.getElementById('czas').innerHTML=$pozostalo;
-        window.setTimeout('getSecs()',1000);
-        if ($pozostalo==0) {
-         window.location.href = "dotyk.php?wyloguj"
-         }
-}
-function WyczyscLicznik()
-{
-  document.getElementById('pozostalo').value='60';
-
-}
-</script>
-        </head>
-        <body align="center" valign="middle" class="login" onload="SetFocus('przepystka');window.setTimeout('getSecs()',1)"  onclick="WyczyscLicznik()">
-                       <?php
+        <input type="hidden" name="pozostalo" id="pozostalo" value="<?php echo $sekundy; ?>">
+        <script>
+            function WyczyscLicznik() {
+                document.getElementById('pozostalo').value = '<?php echo $sekundy; ?>';
+            }
+            setInterval(function () {
+                var pole = document.getElementById('pozostalo');
+                var pozostalo = parseInt(pole.value, 10) - 1;
+                pole.value = pozostalo;
+                var czas = document.getElementById('czas');
+                if (czas) czas.textContent = pozostalo;
+                if (pozostalo <= 0) window.location.href = "dotyk.php?wyloguj";
+            }, 1000);
+        </script>
+        <?php
     }
+
+    /**
+     * Karta formularza na stronie logowania
+     */
+    private function KartaLogowania(string $tytul, string $podtytul, callable $tresc): void
+    {
+        ?>
+        <section class="auth-card">
+            <?php $this->Logo(); ?>
+            <h1><?php echo $tytul; ?></h1>
+            <?php if ($podtytul !== '') { ?><p class="auth-sub"><?php echo $podtytul; ?></p><?php } ?>
+            <?php $tresc(); ?>
+        </section>
+        <?php
+    }
+
     /**
      * Wyświetlenie formularza do logowania
      */
-function FormularzLogowania()
-{
-    ?>
-    <table cellspacing="0" rowspacing="0" align="center" >
-        <tr>
-            <td align="center" valign="middle" nowrap class="td_1">
-                <font class="font5"><b>eWnioski <?php echo date('Y'); ?></b></font>
-            </td>
-        </tr>
+    function FormularzLogowania()
+    {
+        $this->KartaLogowania('Logowanie', 'W przypadku pierwszego logowania do programu używamy swojego numeru ewidencyjnego i pustego hasła.', function () {
+            ?>
+            <form action="log.php" method="POST" class="form-stack">
+                <label class="field">
+                    <span class="field-label">Numer ewidencyjny</span>
+                    <input type="text" name="login" id="login" autocomplete="username" autofocus/>
+                </label>
+                <label class="field">
+                    <span class="field-label">Hasło</span>
+                    <input type="password" name="password" autocomplete="current-password"/>
+                </label>
+                <button type="submit" class="btn btn-primary">Zaloguj</button>
+            </form>
+            <div class="auth-links">
+                <form action="login.php" method="POST">
+                    <input type="hidden" name="zmiana_hasla" value="zmiana_hasla">
+                    <button type="submit" class="btn btn-link">Zmiana hasła</button>
+                </form>
+                <form action="login.php" method="POST">
+                    <input type="hidden" name="przypomnienie_hasla" value="przypomnienie_hasla">
+                    <button type="submit" class="btn btn-link">Przypomnienie hasła</button>
+                </form>
+            </div>
+            <?php
+        });
+    }
 
-        <tr>
-            <td align="center" valign="middle" nowrap class="td_2">
-                <table >
-                    <form action="log.php" method="POST">
-                        <tr>
-                            <td colspan="2">
-                                <b>W przypadku pierwszego logowania do programu <br>używamy swojego numeru ewidencyjnego i pustego hasła. </b><br>
-                            </td>
-
-                        </tr>
-                        <tr>
-                            <td>
-                                <b>Numer Ewidencyjny</b>
-                            </td>
-                            <td>
-                                <input type="text" name="login" id="login" class="border"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <b>Hasło</b>
-                            </td>
-                            <td>
-                                <input type="password" name="password" class="border"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" align="center">
-                                <input type="submit" value="Zaloguj">
-                            </td>
-                        </tr>
-                    </form>
-                    <form action="login.php" method="POST">
-                        <tr>
-                            <td colspan="2" align="center">
-                                <input type="hidden" name="zmiana_hasla" value="zmiana_hasla">
-                                <input type="submit" value="Zmiana hasła">
-                            </td>
-                        </tr>
-                    </form>
-                    <form action="login.php" method="POST">
-                        <tr>
-                            <td colspan="2" align="center">
-                                <input type="hidden" name="przypomnienie_hasla" value="przypomnienie_hasla">
-                                <input type="submit" value="Przypomnienie hasła">
-                            </td>
-                        </tr>
-                    </form>
-                </table>
-            </td>
-        </tr>
-    </table>                      <?php
-}
     /**
      * Wyświetlenie formularza do logowania na urzadzeniach dotykowych
      */
     function FormularzLogowaniaDotyk()
     {
-        ?>
-        <table cellspacing="0" rowspacing="0" align="center" >
-            <tr>
-                <td nowrap class="pkc">
-                </td>
-            </tr>
-            <tr>
-                <td align="center" valign="middle" nowrap class="td_1">
-                    <font class="font5"><b>eWnioski <?php echo date('Y'); ?></b></font>
-                </td>
-            </tr>
-  <tr>
-
-          <td align="center"  valign="middle" id="czas1" name="czas1"  >
-            <h2> Pozostało do wylogowania </h2>
-        </td>
-          <td align="left"  valign="middle" id="czas1" name="czas1"  >
-        <h2> <div id="czas"></div></h2>
-            <input type="hidden" name="pozostalo" id="pozostalo" value="60">
-
-        </td>
-
-    </tr>
-            <tr>
-                <td align="center" valign="middle" nowrap class="td_2">
-                    <table >
-                        <form action="log_dotyk.php" method="POST">
-                            <tr>
-                                <td colspan="2" align="center">
-                                    <h2>Proszę zeskanować przepustkę</h2>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <b>Numer przepustki</b>
-                                </td>
-                                <td>
-                                    <input type="password" name="przepystka" id="przepystka" class="border"  autocomplete="off"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" align="center">
-                                    <input type="submit" value="Zaloguj">
-                                </td>
-                            </tr>
-                        </form>
-                    </table>
-                </td>
-            </tr>
-        </table>                      <?php
+        $this->KartaLogowania('Proszę zeskanować przepustkę', '', function () {
+            ?>
+            <p class="countdown">Pozostało do wylogowania: <strong id="czas">60</strong> s</p>
+            <form action="log_dotyk.php" method="POST" class="form-stack">
+                <label class="field">
+                    <span class="field-label">Numer przepustki</span>
+                    <input type="password" name="przepystka" id="przepystka" autocomplete="off" autofocus/>
+                </label>
+                <button type="submit" class="btn btn-primary btn-large">Zaloguj</button>
+            </form>
+            <?php
+        });
     }
+
     /**
-     * Wyświetlenie formularza do logowania
+     * Formularz utworzenia hasła przy pierwszym logowaniu
      */
-function PoczatekStronyUtworzenie($imie,$nazwisko, $numerewidencyjny,$komunikat)
-{
-    ?>
-    <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/html">
-    <head>
-        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-        <meta http-equiv="Page-Enter" content="RevealTrans(Duration=1,Transition=23)"/>
-        <link rel="stylesheet" type="text/css" href="../css/style.css"/>
-        <title>eWnioski <?php echo date("Y"); ?></title>
-    </head>
-<body align="center" valign="middle" class="login" onload="SetFocus('login')">
-    <table cellspacing="0" rowspacing="0" align="center" height="100%">
-        <tr>
-            <td nowrap class="pkc">
-            </td>
-        </tr>
-        <tr>
-            <td align="center" valign="middle"  class="td_1">
-                <font class="font5"><b>Login nie ma jeszcze </br> utworzonego hasła</b></font>
-            </td>
-        </tr>
-<tr>
-    <td align="center">
-        <h1>Tworzysz hasło dla: </br> <?php echo $imie.' '.$nazwisko.' - '.$numerewidencyjny;?></br><font color ="red">Proszę wpisać prawidłowy adres email firmowy!!!</font color></h1>
-    </td>
-
-</tr>
-        <tr>
-            <td align="center">
-                <h2 > <font color="red"><?php echo $komunikat?></font></h2>
-            </td>
-        </tr>
-
-        <tr>
-            <td align="center" valign="middle"  class="td_2">
-<?php
-
-$email='SHADOW';
-?>
-                <table>
-                <form action="log.php" method="POST">
-                    <tr>
-                        <td>
-                            <b>E-mail</b>
-                        </td>
-                        <td>
-                            <input type="email" name="email" size="30" id="email" value="<?php echo $email;?>">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <b>Hasło</b>
-                        </td>
-                        <td>
-                            <input type="password" size="30" name="utworz_haslo" id="utworz_haslo">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <b>Powtórz hasło</b>
-                        </td>
-                        <td>
-                            <input type="password" size="30" name="powtorz_haslo" id="powtorz_haslo">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" align="center">
-<input type="hidden" name="login" value="<?php echo $numerewidencyjny?>">
-                    <input type="submit" value="Utwórz hasło">
-                        </td>
-                    </tr>
-                </form>
-                </table>
-            </td>
-        </tr>
-    </table>                      <?php
-}
+    function PoczatekStronyUtworzenie($imie, $nazwisko, $numerewidencyjny, $komunikat)
+    {
+        $this->PoczatekStronyLogowanie();
+        $this->KartaLogowania('Utwórz hasło', 'Login nie ma jeszcze utworzonego hasła.', function () use ($imie, $nazwisko, $numerewidencyjny, $komunikat) {
+            ?>
+            <p>Tworzysz hasło dla: <strong><?php echo htmlspecialchars($imie . ' ' . $nazwisko . ' - ' . $numerewidencyjny); ?></strong></p>
+            <?php $this->Alert('Proszę wpisać prawidłowy firmowy adres e-mail.', '', 'info'); ?>
+            <?php if ($komunikat != '') $this->Alert($komunikat, '', 'error'); ?>
+            <form action="log.php" method="POST" class="form-stack">
+                <label class="field">
+                    <span class="field-label">E-mail</span>
+                    <input type="email" name="email" id="email" value="" autocomplete="email" required>
+                </label>
+                <label class="field">
+                    <span class="field-label">Hasło</span>
+                    <input type="password" name="utworz_haslo" id="utworz_haslo" autocomplete="new-password">
+                </label>
+                <label class="field">
+                    <span class="field-label">Powtórz hasło</span>
+                    <input type="password" name="powtorz_haslo" id="powtorz_haslo" autocomplete="new-password">
+                </label>
+                <input type="hidden" name="login" value="<?php echo htmlspecialchars((string)$numerewidencyjny); ?>">
+                <button type="submit" class="btn btn-primary">Utwórz hasło</button>
+            </form>
+            <?php
+        });
+    }
 
     /**
      * Domknięcie tagów końca strony logowania
@@ -284,15 +331,8 @@ $email='SHADOW';
     function KoniecStronyLogowanie()
     {
         ?>
-        <table class="td_1" align="center">
-            <tr class="td_1">
-                <td class="div" align="center">
-                    <div class="mysql">
-                    </div>
-                    <?php $this->Opracowal(); ?>
-                </td>
-            </tr>
-        </table>
+        <p class="auth-footer"><?php $this->Opracowal(); ?></p>
+        </main>
         </body>
         </html>
         <?php
@@ -303,9 +343,7 @@ $email='SHADOW';
      */
     function Opracowal()
     {
-        ?>
-        <font class="font4"><b>Opracował Jakub Duda 2019 r.</b></font>
-        <?php
+        echo 'Opracował Jakub Duda 2019 r.';
     }
 
     /**
@@ -313,68 +351,49 @@ $email='SHADOW';
      */
     function NieprawidlowyLogin()
     {
-        if($_GET['fail']==1)
-            $komunikat=' Wpisane złe dane logowania';
-        if($_GET['fail']==2)
-            $komunikat='Nie znaleziono takiego numeru ewidencyjnego w bazie';
-        if($_GET['fail']==3)
-            $komunikat='Nie znaleziono aktywnej karty z takim numerem';
-        if($_GET['fail']==4)
-            $komunikat='Użytkownik tej karty nie ma przypisanego przełozonego. Zgłoś się do działu HR';
-        if($_GET['fail']==5)
-            $komunikat='Użytkownik już nie pracuje w PKC';
-        ?>
-        <table class="bg_red warning" align="center">
-            <tr>
-                <td align="center">
-                    <font class="font_warning">
-                       <?php echo $komunikat;?>
-                    </font>
-                </td>
-            </tr>
-        </table>
-        <?php
+        $komunikaty = [
+            1 => 'Wpisane złe dane logowania',
+            2 => 'Nie znaleziono takiego numeru ewidencyjnego w bazie',
+            3 => 'Nie znaleziono aktywnej karty z takim numerem',
+            4 => 'Użytkownik tej karty nie ma przypisanego przełożonego. Zgłoś się do działu HR',
+            5 => 'Użytkownik już nie pracuje w PKC',
+        ];
+        $komunikat = $komunikaty[(int)($_GET['fail'] ?? 0)] ?? null;
+        if ($komunikat !== null) {
+            $this->Alert($komunikat, '', 'error');
+        }
     }
+
     function ZlaPrzegladarka()
     {
+        $przegladarki = [
+            ['https://www.mozilla.org/pl/firefox/new/', '../img/firefox.png', 'Mozilla Firefox'],
+            ['https://www.google.pl/chrome/browser/desktop/index.html', '../img/chrome.png', 'Google Chrome'],
+            ['http://www.opera.com/pl/download', '../img/opera.png', 'Opera'],
+        ];
         ?>
-        <br/>
-        <br/>
-        <div align='center'><h1><b>Nieprawidłowa przeglądarka!</b></h1></div><div align='center'><h1><b>Przeglądarka Internet Explorer, Microsoft Edge i Safari nie są wspierane przez tą aplikację</b></h1></div>
-        <div align="center"><img src="../img/633.png" /></div>
-        <div align='center'><h1><b>Proszę użyć jednej z poniższych przeglądarek:</b></h1></div>
-        <table align="center" cellspacing="30">
-            <tr>
-                <td align="center">
-                    <a href="https://www.mozilla.org/pl/firefox/new/" target="_blank">
-                        <img src="../img/firefox.png"><br/>
-                        <h3>Mozilla Firefox</h3>
+        <section class="auth-card auth-card-wide">
+            <h1>Nieprawidłowa przeglądarka!</h1>
+            <p class="auth-sub">Przeglądarka Internet Explorer, Microsoft Edge i Safari nie są wspierane przez tą aplikację. Proszę użyć jednej z poniższych przeglądarek:</p>
+            <div class="browser-list">
+                <?php foreach ($przegladarki as [$adres, $obrazek, $nazwa]) { ?>
+                    <a href="<?php echo $adres; ?>" target="_blank" class="app-card">
+                        <img src="<?php echo $obrazek; ?>" alt="" width="48" height="48">
+                        <span class="app-name"><?php echo $nazwa; ?></span>
                     </a>
-                </td>
-                <td align="center">
-                    <a href="https://www.google.pl/chrome/browser/desktop/index.html" target="_blank">
-                        <img src="..//img/chrome.png"><br/>
-                        <h3>Google Chrome</h3>
-                    </a>
-                </td>
-                <td align="center">
-                    <a href="http://www.opera.com/pl/download" target="_blank">
-                        <img src="../img/opera.png"><br/>
-                        <h3>Opera</h3>
-                    </a>
-                </td>
-            </tr>
-        </table>
+                <?php } ?>
+            </div>
+        </section>
         <?php
     }
+
     function StaraPrzegladarka($wersja)
     {
         ?>
-        <br/>
-        <br/>
-        <div align='center'><h1><b>Stara wersja przegladarki!</b></h1></div><div align='center'><h1><b>Program wymaga wersji Firefox conajmniej 57 natomaist ty masz <?php echo $wersja?> </b></h1></div>
-        <div align="center"><img src="../img/firefox.png" /></div>
-        <div align='center'><h1><b>Proszę zaktualizować przeglądarke:</b></h1></div>
+        <section class="auth-card">
+            <h1>Stara wersja przeglądarki!</h1>
+            <p class="auth-sub">Program wymaga wersji Firefox co najmniej 57, natomiast ty masz <?php echo htmlspecialchars((string)$wersja); ?>. Proszę zaktualizować przeglądarkę.</p>
+        </section>
         <?php
     }
 
@@ -384,427 +403,282 @@ $email='SHADOW';
     function FormularzZmianyhasla()
     {
         ?>
-
-
-        <table border="0" align="center" cellspan="2">
-            <tr>
-                <hr/>
-                <td align="left" class="padding_10_all" colspan="2">
-                    <form method="POST">
-                        <div><h3>Zmiana hasła</h3></div>
-                </td>
-            </tr>
-            <tr>
-                <td align="left" class="padding_10_all">
-                    <b>Login</b>
-                </td>
-                <td align="left" class="padding_10_all">
-                    <input type="text" name="zmiana_login" class="border"/>
-                </td>
-            </tr>
-            <tr>
-                <td align="left" class="padding_10_all">
-                    <b>Stare</b>
-                </td>
-                <td align="left" class="padding_10_all">
-                    <input type="password" name="zmiana_stare_haslo" class="border"/>
-                </td>
-            </tr>
-            <tr>
-                <td align="left" class="padding_10_all">
-                    <b>Nowe hasło</b>
-                </td>
-                <td align="left" class="padding_10_all">
-                    <input type="password" name="zmiana_nowe_haslo" class="border"/>
-                </td>
-            </tr>
-            <tr>
-                <td align="left" class="padding_10_all">
-                    <b>Powtórz nowe hasło</b>
-                </td>
-                <td align="left" class="padding_10_all">
-                    <input type="password" name="zmiana_nowe_haslo_powtorz" class="border"/>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <input type="submit" name="zmiana" value="Zmień hasło"/>
-                    </form>
-                </td>
-        </table>
+        <section class="auth-card">
+            <h2>Zmiana hasła</h2>
+            <form method="POST" class="form-stack">
+                <label class="field"><span class="field-label">Login</span><input type="text" name="zmiana_login"/></label>
+                <label class="field"><span class="field-label">Stare hasło</span><input type="password" name="zmiana_stare_haslo"/></label>
+                <label class="field"><span class="field-label">Nowe hasło</span><input type="password" name="zmiana_nowe_haslo"/></label>
+                <label class="field"><span class="field-label">Powtórz nowe hasło</span><input type="password" name="zmiana_nowe_haslo_powtorz"/></label>
+                <button type="submit" name="zmiana" value="Zmień hasło" class="btn btn-primary">Zmień hasło</button>
+            </form>
+        </section>
         <?php
     }
 
-    /**
-     * Początek strony, nagłówki, menu
-     */
-    function PoczatekStrony()
+    function FormularzPrzypomnieniaHasla()
     {
         ?>
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <link rel="stylesheet" type="text/css" href="../css/style.css?rand=5"/>
-            <link type='text/css' href='../css/basic.css' rel='stylesheet' media='screen'/>
-            <link rel="stylesheet" type="text/css" href="../css/jquery-ui.css"/>
-            <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8"/>
-            <meta http-equiv="Page-Enter" content="RevealTrans(Duration=1,Transition=23)"/>
-            <script type="text/javascript" src="../css/chrome.js"></script>
-            <script type="text/javascript" src="../js/jquery.js"></script>
-            <script type="text/javascript" src="../js/ajax.js"></script>
-            <script type="text/javascript" src="../js/Common.js?rand=<?php echo rand(1, 100000000); ?>"></script>
-            <script type="text/javascript" src="../js/jquery.simplemodal.js"></script>
-            <script type="text/javascript" src="../js/jquery_1.10.1.js"></script>
-            <script type="text/javascript" src="../js/jquery-ui-1.10.3.custom.js"></script>
-
-              <script type="text/javascript" src="../css/scw.js?2"></script>
-            <!--  <script type='text/javascript' src='../js/jquery.autocomplete.js'></script>
-<script type="text/javascript" src="../js/jquery-1.2.1.pack.js"></script>
-            <script>
-                function AutopodpowiadanieSymfonia(id) {
-                    $("#" + id).autocomplete("SprawdzenieSymfonia.php?klient", {
-                        width: 600,
-                        matchContains: false,
-                        mustMatch: false,
-                        minChars: 1,
-                        multiple: false,
-                        // highlight: true,
-                        multipleSeparator: ",",
-                        selectFirst: false
-                    });
-                }s
-
-
-            </script>-->
-
-        </head>
-        <body class="body"   onload="$('#submenu').hide();">
-        <title>eWnioski <?php echo date('Y'); ?></title>
-        <table class="table"  align="center" cellspacing="0" cellpadding="0" >
-     <tr>
-            <td align="center" valign="middle" class="middle_menu bottom font" colspan="7">
-                &nbsp;
-            </td>
-        </tr>
-
-        <tr>
-            <td class="bottom menu_1" colspan="3">
-            </td>
-            <td  class="bottom menu_1" align="center">&nbsp;
-              <img src="../img/pkcmale.png?1" />
-            </td>
-            <td class="bottom menu_1" colspan="3">&nbsp;
-            </td>
-        </tr>
-
-        <tr>
-            <td align="center" valign="middle" class="middle_menu bottom font" colspan="7">&nbsp;
-                <?php
-                $this->PokazDaneUzytkownika();
-                ?>
-            </td>
-        </tr>
-        <tr>
-            <td class="men" colspan="7">
-                <?php
-                include 'menu.php';
-                ?>
-            </td>
-        </tr>
-        <tr heigh="10%">
-            <td align="center"  valign="middle" id="kom" colspan="7" ><?php
-                if (isset($_SESSION['ezla_komunikat'])) {
-                    $this->WyswietlKomunikat();
-                }
-                ?>
-            </td>
-        </tr>
-
+        <section class="auth-card">
+            <h2>Przypomnienie hasła</h2>
+            <form method="POST" class="form-stack">
+                <label class="field"><span class="field-label">Login (numer ewidencyjny) podany przy rejestracji</span><input type="text" name="login_przypomnienie"/></label>
+                <label class="field"><span class="field-label">E-mail podany przy rejestracji</span><input type="email" name="email_przypomnienie"/></label>
+                <button type="submit" name="przypomnij" value="Przypomnij hasło" class="btn btn-primary">Przypomnij hasło</button>
+            </form>
+        </section>
         <?php
     }
+
     /**
-     * Początek strony, nagłówki, menu
+     * Początek strony, nagłówki, menu boczne
+     * @param string|null $tytul Nagłówek strony (domyślnie nazwa pozycji menu)
      */
-function PoczatekStronyDotyk()
-{
-    ?>
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <link rel="stylesheet" type="text/css" href="../css/style.css?rand=1"/>
-        <link type='text/css' href='../css/basic.css' rel='stylesheet' media='screen'/>
-        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8"/>
-        <meta http-equiv="Page-Enter" content="RevealTrans(Duration=1,Transition=23)"/>
-        <script type="text/javascript" src="../css/chrome.js"></script>
-        <script type="text/javascript" src="../js/jquery.js"></script>
-        <script type="text/javascript" src="../js/ajax.js"></script>
-        <script type="text/javascript" src="../js/Common.js?rand=<?php echo rand(1, 100000000); ?>"></script>
-        <script type="text/javascript" src="../js/jquery.simplemodal.js"></script>
-        <script type="text/javascript" src="../css/scwdotyk.js"></script>
-        <link rel="stylesheet" href="../css/jsKeyboard.css" type="text/css" media="screen"/>
-        <script>
+    function PoczatekStrony($tytul = null)
+    {
+        $tytul ??= $this->TytulStrony();
+        $this->NaglowekHtml($tytul . ' - eWnioski', [
+            '../js/jquery.js',
+            '../js/ajax.js',
+            '../js/Common.js?v=' . @filemtime(EWNIOSKI_ROOT . '/js/Common.js'),
+            '../js/jquery.simplemodal.js',
+            '../js/jquery_1.10.1.js',
+            '../js/jquery-ui-1.10.3.custom.js',
+            '../css/scw.js?2',
+        ], ['../css/jquery-ui.css']);
+        ?>
+        <body>
+        <div class="app-shell">
+            <aside class="sidebar">
+                <div class="sidebar-top">
+                    <a href="index.php" class="brand-link"><?php $this->Logo(); ?></a>
+                    <button type="button" class="menu-toggle" aria-expanded="false" data-menu-toggle>Menu</button>
+                </div>
+                <div class="search-box">
+                    <?php echo $this->Ikona('szukaj', 14); ?>
+                    <input type="search" placeholder="Szukaj w menu..." data-szukaj-menu aria-label="Szukaj w menu"/>
+                </div>
+                <nav class="category-nav">
+                    <a href="index.php" class="tab-btn<?php echo (basename($_SERVER['PHP_SELF'] ?? '') == 'index.php' && !isset($_GET['tym'])) ? ' active' : ''; ?>" data-category="all">Strona główna</a>
+                    <?php foreach ($this->Menu() as [$grupa, $pozycje]) { ?>
+                        <div class="field-label" data-grupa-menu><?php echo $grupa; ?></div>
+                        <?php foreach ($pozycje as $pozycja) { ?>
+                            <a href="<?php echo $this->AdresPozycji($pozycja); ?>" data-category="<?php echo $pozycja[4]; ?>"
+                               class="tab-btn<?php echo $this->CzyAktywna($pozycja) ? ' active' : ''; ?>"><?php echo $pozycja[2]; ?></a>
+                        <?php } ?>
+                    <?php } ?>
+                </nav>
+                <div class="sidebar-user">
+                    <?php $this->PokazDaneUzytkownika(); ?>
+                </div>
+                <?php $this->PrzelacznikMotywu(); ?>
+                <a class="admin-link" href="#" data-otworz-modal="modal-wersja">Wersja programu <?php echo $this->WersjaProgramu(); ?></a>
+                <a class="admin-link" href="index.php?wyloguj">Wyloguj</a>
+            </aside>
+            <main class="content">
+                <div class="content-header">
+                    <h1><?php echo htmlspecialchars($tytul); ?></h1>
+                    <span class="results-count"><?php echo date('d.m.Y'); ?></span>
+                </div>
+                <?php
+                $this->WyswietlKomunikat();
+                if (isset($_SESSION['ezla_komunikat'])) {
+                    echo '<div class="notice">' . $_SESSION['ezla_komunikat'] . '</div>';
+                    unset($_SESSION['ezla_komunikat']);
+                }
+                ?>
+                <div class="page-body">
+        <?php
+    }
 
+    /**
+     * Początek prostej strony otwieranej w osobnym oknie (np. edycja pozycji nadgodzin)
+     * @param string $tytul Tytuł okna
+     */
+    function PoczatekStronyOkna(string $tytul): void
+    {
+        $this->NaglowekHtml($tytul, [
+            '../js/jquery_1.10.1.js',
+            '../js/jquery-ui-1.10.3.custom.js',
+            '../css/scw.js',
+            '../js/Common.js?v=' . @filemtime(EWNIOSKI_ROOT . '/js/Common.js'),
+        ], ['../css/jquery-ui.css']);
+        ?>
+        <body class="popup-page">
+        <main class="content popup-content">
+            <div class="page-body">
+        <?php
+    }
 
-startday = new Date();
-clockStart = startday.getTime();
-function initStopwatch()
-{
- var myTime = new Date();
-        var timeNow = myTime.getTime();
-        var timeDiff = timeNow - clockStart;
-        this.diffSecs = timeDiff/1000;
-        return(this.diffSecs);
-}
-function getSecs()
-{
-        var mySecs = initStopwatch();
-        var mySecs1 = ""+mySecs;
-        var $pozostalo=document.getElementById('pozostalo').value;
-        $pozostalo=$pozostalo-1;
-        document.getElementById('pozostalo').value=$pozostalo;
-        mySecs1= mySecs1.substring(0,mySecs1.indexOf("."));
-        document.getElementById('czas').innerHTML=$pozostalo;
-        window.setTimeout('getSecs()',1000);
-        if ($pozostalo==0) {
-         window.location.href = "dotyk.php?wyloguj"
-         }
-}
-function WyczyscLicznik()
-{
-  document.getElementById('pozostalo').value='60';
+    /**
+     * Koniec strony otwieranej w osobnym oknie
+     */
+    function KoniecStronyOkna(): void
+    {
+        ?>
+            </div>
+        </main>
+        </body>
+        </html><?php
+    }
 
-}
-</script>
-    </head>
-<body class="body"  onLoad="window.setTimeout('getSecs()',1)" onclick="WyczyscLicznik()">
-    <title>eWnioski <?php echo date('Y'); ?></title>
-<table class="table"  align="center" cellspacing="0" cellpadding="0" >
-    <tr>
-        <td align="center" valign="middle" class="middle_menu bottom font" colspan="6">
-            &nbsp;
-        </td>
-    </tr>
+    /**
+     * Okno z historią zmian programu
+     */
+    function OknoWersji(): void
+    {
+        ?>
+        <div class="modal-overlay" id="modal-wersja" hidden>
+            <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-wersja-tytul">
+                <div class="modal-header">
+                    <h2 id="modal-wersja-tytul">Historia wersji</h2>
+                    <button type="button" data-zamknij-modal aria-label="Zamknij">&times;</button>
+                </div>
+                <div class="modal-body"><?php echo nl2br(htmlspecialchars((string)@file_get_contents(EWNIOSKI_ROOT . '/wersja/wersja.txt'))); ?></div>
+            </div>
+        </div>
+        <?php
+    }
 
-    <tr align="center">
-        <td class="bottom menu_1" colspan="2">
-        </td>
-
-        <td class="bottom menu_1" colspan="2">&nbsp;
-          <img src="../img/pkcmale.png" />
-        </td>
-
-        <td class="bottom menu_1" colspan="2">
-        </td>
-
-    </tr>
-
-    <tr>
-        <td align="center" valign="middle" class="middle_menu bottom font" colspan="6">&nbsp;
-            <?php
-            $czas=60;
-            if(isset($_GET['czas']))$czas=10;
-            $this->PokazDaneUzytkownika();
-            ?>
-        </td>
-    </tr>
-    <tr>
-    <td class="mendotyklewa">
-        <a href="dotyk.php?dodaj_urlop"><img src="../img/dodajurlop.png"/></a>
-    </td>
-    <td class="mendotyk">
-        <a href="dotyk.php?dodaj_zwolnienie"><img src="../img/dodajzwolnienie.png"/></a>
-    </td>
-    <td class="mendotyk">
-        <a href="dotyk.php?raport_urlopow"><img src="../img/raporturlopow.png" /></a>
-    </td>
-    <td class="mendotyk">
-        <a href="dotyk.php?raport_zwolnien"><img src="../img/raportzwolnien.png" /></a>
-    </td>
-    <td class="mendotyk">
-        <a href="dotyk.php?stan_godzin"><img src="../img/stannadgodzin.png" /></a>
-    </td>
-  <td class="mendotyk">
-        <a href="dotyk.php?wyloguj"><img src="../img/wyloguj.png" /></a>
-        </td>
-</tr>
-    <tr>
-        <td align="center"  valign="middle" id="czas1" name="czas1" colspan="2" >
-        </td>
-          <td align="center"  valign="middle" id="czas1" name="czas1" colspan="1" >
-            <h2> Pozostało do wylogowania </h2>
-        </td>
-          <td align="left"  valign="middle" id="czas1" name="czas1" colspan="" >
-        <h2> <div id="czas"></div></h2>
-            <input type="hidden" name="pozostalo" id="pozostalo" value="<?php echo $czas?>">
-
-        </td>
-          <td align="center"  valign="middle" id="czas1" name="czas1" colspan="2" >
-
-        </td>
-
-    </tr>
-
-
-
-
-    <?php
-}
+    /**
+     * Początek strony na ekranach dotykowych
+     */
+    function PoczatekStronyDotyk()
+    {
+        $czas = isset($_GET['czas']) ? 10 : 60;
+        $this->NaglowekHtml('eWnioski ' . date('Y'), [
+            '../js/jquery.js',
+            '../js/ajax.js',
+            '../js/Common.js?v=' . @filemtime(EWNIOSKI_ROOT . '/js/Common.js'),
+            '../js/jquery.simplemodal.js',
+            '../css/scwdotyk.js',
+        ], ['../css/jsKeyboard.css']);
+        $kafelki = [
+            ['dotyk.php?dodaj_urlop', 'Dodaj urlop', 'urlop', 'dodaj_urlop'],
+            ['dotyk.php?dodaj_zwolnienie', 'Dodaj zwolnienie', 'zwolnienie', 'dodaj_zwolnienie'],
+            ['dotyk.php?raport_urlopow', 'Raport urlopów', 'raport', 'raport_urlopow'],
+            ['dotyk.php?raport_zwolnien', 'Raport zwolnień', 'raport', 'raport_zwolnien'],
+            ['dotyk.php?stan_godzin', 'Stan nadgodzin', 'nadgodziny', 'stan_godzin'],
+            ['dotyk.php?wyloguj', 'Wyloguj', 'wyloguj', 'wyloguj'],
+        ];
+        ?>
+        <body class="kiosk" onclick="WyczyscLicznik()">
+        <?php $this->LicznikWylogowania($czas); ?>
+        <header class="kiosk-header">
+            <?php $this->Logo(); ?>
+            <?php $this->PokazDaneUzytkownika(); ?>
+            <span class="countdown">Pozostało do wylogowania: <strong id="czas"><?php echo $czas; ?></strong> s</span>
+        </header>
+        <nav class="kiosk-nav">
+            <?php foreach ($kafelki as [$adres, $nazwa, $ikona, $klucz]) { ?>
+                <a href="<?php echo $adres; ?>" class="app-card<?php echo isset($_GET[$klucz]) ? ' active' : ''; ?>" data-category="<?php echo $klucz == 'wyloguj' ? 'admin' : 'prod'; ?>">
+                    <span class="app-icon"><?php echo $this->Ikona($ikona, 26); ?></span>
+                    <span class="app-name"><?php echo $nazwa; ?></span>
+                </a>
+            <?php } ?>
+        </nav>
+        <main class="content kiosk-content">
+            <div class="page-body">
+        <?php
+    }
 
     /**
      * Koniec strony głównej
      */
     function KoniecStrony()
     {
+        // Raporty kończą ostatnią tabelę bez </table> (dawniej domykał ją układ strony).
+        // Nadmiarowy </table> przeglądarka pomija, a brakujący przesunąłby stopkę nad tabelę.
         ?>
-        <tr>
-            <td align="center" valign="middle" class="low_menu_4 up font" colspan="7">
-                <div class="hidden" id="kontrola_wersji"
-                     style="color: #000000;"><?php echo str_replace("\n", "<br/>", file_get_contents("../wersja/wersja.txt")); ?></div>
-            </td>
-        </tr>
-        </table>
-        <br/>
-        <?php
-        $this->StopkaJezyki();
-        ?>
+                </table>
+                </div>
+                <?php $this->StopkaJezyki(); ?>
+            </main>
+        </div>
+        <?php $this->OknoWersji(); ?>
         </body>
         </html><?php
     }
 
     /**
-     * Koniec strony głównej
+     * Koniec strony na ekranach dotykowych
      */
-function KoniecStronyDotyk()
-{
-    ?>
-</table>
-    </tr>
-    <tr>
-        <td align="center" valign="middle" class="low_menu_4 up font" colspan="7">
-            <div class="hidden" id="kontrola_wersji"
-                 style="color: #000000;"><?php echo str_replace("\n", "<br/>", file_get_contents("../wersja/wersja.txt")); ?></div>
-        </td>
-    </tr>
-</table>
-    <br/>
-<?php
-$this->StopkaJezyki();
-?>
-</body>
-</html><?php
-}
+    function KoniecStronyDotyk()
+    {
+        ?>
+            </table>
+            </div>
+        </main>
+        </body>
+        </html><?php
+    }
+
     /**
-     * Koniec strony głównej
+     * Koniec strony z raportami
      */
     function KoniecStronyRaporty()
     {
-        ?>
-
-        <tr>
-            <td align="center" valign="middle" class="low_menu_4 up font" colspan="27">
-                <div class="hidden" id="kontrola_wersji"
-                     style="color: #000000;"><?php echo str_replace("\n", "<br/>", file_get_contents("../wersja/wersja.txt")); ?></div>
-            </td>
-        </tr>
-        </table>
-        <br/>
-        <?php
-        $this->StopkaJezyki();
-        ?>
-        </body>
-        </html><?php
+        $this->KoniecStrony();
     }
 
     /**
-     * Logo Document Flow
+     * Strona główna: kafelki z funkcjami programu i ulubione
      */
     function LogoW()
     {
+        $liczba = 0;
+        foreach ($this->Menu() as [, $pozycje]) $liczba += count($pozycje);
         ?>
-        <tr>
-            <td align="center" valign="middle" class="text font2 bottom" colspan="7">
-                <?php
-                if (isset($_SESSION['ewnioski_komunikat'])) {
-                    $this->WyswietlKomunikat();
-                }
-                ?>
-                <h2>eWnioski <?php echo date('Y'); ?> Strona główna programu</h2>
-                <img src="../img/pkc.png?rand=2" class="border"/>
-            </td>
-        </tr>
+        <div class="favorites-row" data-ulubione hidden>
+            <div class="section-label">Ulubione</div>
+            <div class="favorites-track" data-ulubione-lista></div>
+        </div>
+        <?php foreach ($this->Menu() as [$grupa, $pozycje]) { ?>
+            <div class="section-label section-gap"><?php echo $grupa; ?></div>
+            <div class="app-grid">
+                <?php foreach ($pozycje as $pozycja) {
+                    $adres = $this->AdresPozycji($pozycja); ?>
+                    <a href="<?php echo $adres; ?>" class="app-card" data-category="<?php echo $pozycja[4]; ?>" data-skrot="<?php echo htmlspecialchars($adres); ?>" data-nazwa="<?php echo htmlspecialchars($pozycja[2]); ?>">
+                        <button type="button" class="fav-star" aria-label="Dodaj do ulubionych" data-gwiazdka>
+                            <?php echo $this->Ikona('gwiazda', 16); ?>
+                        </button>
+                        <span class="app-icon"><?php echo $this->Ikona($pozycja[3]); ?></span>
+                        <span class="app-name"><?php echo $pozycja[2]; ?></span>
+                        <span class="app-purpose"><?php echo $pozycja[5]; ?></span>
+                        <span class="app-meta"><span class="badge"><?php echo $pozycja[4] == 'admin' ? 'HR' : $grupa; ?></span></span>
+                        <span class="app-hover-info">
+                            <span class="hover-info-title"><?php echo $pozycja[2]; ?></span>
+                            <span class="hover-info-row"><span class="hover-info-label">Do czego służy</span><?php echo $pozycja[5]; ?></span>
+                        </span>
+                    </a>
+                <?php } ?>
+            </div>
+        <?php } ?>
+        <p class="results-count section-gap"><?php echo $liczba; ?> funkcji dostępnych w programie. Gwiazdką oznaczysz te, których używasz najczęściej.</p>
         <?php
     }
-     /**
-     * Logo Document Flow
+
+    /**
+     * Strona startowa na ekranach dotykowych
      */
     function LogoWDotyk()
     {
         ?>
-        <tr>
-            <td align="center" valign="middle" class="text font2 bottom" colspan="7">
-                <?php
-                if (isset($_SESSION['ewnioski_komunikat'])) {
-                    $this->WyswietlKomunikat();
-                }
-                ?>
-                <h1>UWAGA !!!</h1>
-                <h1>Wprowadzony przez ciebie wniosek nie oznacza jego akceptacji. <br> Skontaktuj się z przełożonym w celu potwierdzenia udzielenia urlopu.</h1>
-                <h3>W przypadku braku akceptacji przełożonego zostanie wprowadzona <br> </h3><h2><font color="red">nieobecność nieusprawiedliwiona.</font></h2>
-                <img src="../img/pkc.png" class="border"/>
-            </td>
-        </tr>
+        <div class="panel kiosk-info">
+            <h1>UWAGA !!!</h1>
+            <h2>Wprowadzony przez ciebie wniosek nie oznacza jego akceptacji. <br> Skontaktuj się z przełożonym w celu potwierdzenia udzielenia urlopu.</h2>
+            <h3>W przypadku braku akceptacji przełożonego zostanie wprowadzona</h3>
+            <h2 class="text_red">nieobecność nieusprawiedliwiona.</h2>
+        </div>
         <?php
     }
+
     function Instrukcja()
     {
-
-?>
-<tr  height="90%">
-    <td align="center" valign="middle" class="text2 font2 bottom" colspan="7" >
-        <iframe
-            src="../doc/instrukcja_ewnioski.pdf#toolbar=0&amp;statusbar=0&amp;messages=0&amp;navpanes=0&amp;zoom=200,0,1000&amp;page=0jheight=900"
-            scrolling="no" width="90%" height="900">
-    </iframe>
-    </td>
-</tr>
+        ?>
+        <div class="panel panel-flush">
+            <iframe src="../doc/instrukcja_ewnioski.pdf#toolbar=0&amp;statusbar=0&amp;messages=0&amp;navpanes=0" class="pdf-frame" title="Instrukcja"></iframe>
+        </div>
         <?php
     }
-
-function FormularzPrzypomnieniaHasla()
-{
-    ?>
-
-
-    <table border="0" align="center" cellspan="2">
-        <tr>
-            <hr/>
-            <td align="center" class="padding_10_all" colspan="2">
-                <form method="POST">
-                    <div><h3>Przypomnienie hasła</h3></div>
-            </td>
-        </tr>
-        <tr>
-            <td align="left" class="padding_10_all">
-                <b>Login(numer ewidencyjny) podany przy rejestracji</b>
-            </td>
-            <td align="left" class="padding_10_all">
-                <input type="text" name="login_przypomnienie" size="30"  class="border"/>
-            </td>
-        </tr>
-        <tr>
-            <td align="left" class="padding_10_all">
-                <b>E-mail podany przy rejestracji</b>
-            </td>
-            <td align="left" class="padding_10_all">
-                <input type="email" name="email_przypomnienie" size="30" class="border"/>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" align="center">
-                <input type="submit" name="przypomnij" value="Przypomnij hasło"/>
-                </form>
-            </td>
-    </table>
-    <?php
-}
 }

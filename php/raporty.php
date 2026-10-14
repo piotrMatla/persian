@@ -5,12 +5,7 @@
  * Date: 18.12.2018
  * Time: 11:06
  */
-set_include_path(get_include_path().PATH_SEPARATOR.__DIR__);
-spl_autoload_register(function ($class) {
-    foreach(explode(PATH_SEPARATOR,get_include_path()) as $path) {
-        if(file_exists($path."/klasy/".$class.".php")) require_once($path."/klasy/".$class.".php");
-    }
-});
+require_once __DIR__ . '/bootstrap.php';
 $r = new Raporty;
 $a = new Common;
 $h = new HTML;
@@ -39,17 +34,13 @@ if(isset($_POST['usun_praca_zdalna']))
 {
     $r->UsunPracZdalna();
 }
-if(isset($_GET['sort']))
+if(isset($_GET['sort'], $_GET['raport']) and preg_match('/^[a-z_]+$/', $_GET['raport']))
 {
     $f->Sortowanie('ewnioski_sortowanie_'.$_GET['raport'], $_GET['sort'],'ewnioski_sortowanie_kierunek');
 }
 if(isset($_POST['limit_stron']))
 {
-    $_SESSION['ewnioski_limit_stron']=$_POST['limit_stron'];
-}
-if(isset($_POST['limit_stron']))
-{
-    $_SESSION['ewnioski_limit_stron']=$_POST['limit_stron'];
+    $_SESSION['ewnioski_limit_stron']=max(1, (int)$_POST['limit_stron']);
 }
 if(isset($_POST['wydruk_zwolnienie']))
 {
@@ -132,10 +123,6 @@ if(isset($_POST['id_cofnij_kierownik_zwolnienie_anuluj']))
 {
     $r->AnulujZwolnienie();
 }
-if(isset($_POST['id_cofnij_kierownik_zwolnienie_anuluj']))
-{
-    $r->AnulujZwolnienie();
-}
 if(isset($_POST['mpk_wpisz']))
 {
     $r->WpiszMPK();
@@ -145,7 +132,7 @@ if(isset($_POST['usun_mpk']))
     $r->UsunMPK();
 }
 if(isset($_POST['numer_wpisz'])) {
-    if ($_POST['id_edytuj']) {
+    if (!empty($_POST['id_edytuj'])) {
         $r->EdytujOsoba();
     } else {
     $r->WpiszOsoba();
@@ -185,16 +172,15 @@ if(isset($_POST['dodaj_praca_zdalna']))
 }
 if(isset($_POST['excel_export_wejscia']))
 {
-    $e->RaportWejscXLSX($_POST['excel_export_wejscia']);
+    $e->RaportWejscXLSX($e->PobierzZapytanie($_POST['excel_export_wejscia']));
     exit;
 }if(isset($_POST['zapytanie_excel_widoczne']))
 {
-    $e->RaportUrlopyWidoczneXLSX($_POST['zapytanie_excel_widoczne']);
+    $e->RaportUrlopyWidoczneXLSX($e->PobierzZapytanie($_POST['zapytanie_excel_widoczne']));
     exit;
 }
 $h->PoczatekStrony();
-    ?><tr>
-        <td colspan="7" align="center"><?php
+    ?><div class="raport"><?php
              if(isset($_GET['wejscia'])) {
                 $r->PokazMenuSzukaniaDanychWejscia();
                  $r->RaportWejscLokalnie();//Raport wejść z systemu RCP
@@ -271,6 +257,5 @@ $h->PoczatekStrony();
                 $r->RaportPracaZdalnaCzasPracy();//Raportstanu Pracy Zdalnej
             }
     ?>
-        </td>
-</tr><?php
+</table></div><?php
 $h->KoniecStronyRaporty();

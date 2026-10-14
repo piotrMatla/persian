@@ -1,9 +1,6 @@
 <?php
 
-function __autoload($x)
-{
-    require_once("../klasy/$x.php");
-}
+require_once dirname(__DIR__) . '/bootstrap.php';
 $a = new Nadgodziny;
 $array = array();
 $a->UstawieniaStandardowe();

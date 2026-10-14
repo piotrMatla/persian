@@ -8,148 +8,28 @@
 
 class Excel extends Common
 {
-    /**
-     * Eksport pliku excel do Saturna
-     */
-    function EksportSaturn()
-    {
-        set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-        require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';
-        //utworzenie nowego arkusza
-        $workbook = new Spreadsheet_Excel_Writer();
-        $polaczenie = $this->MysqliConnect();
-        $hr_polaczenie = $this->HrPolaczenie();
-        $workbook->send('NieobUzup.xls');
-        $worksheet = &$workbook->addWorksheet('NieobUzup');
-        $workbook->setVersion(8);
-        $worksheet->setInputEncoding('UTF-8');
-
-        $decimal_format = &$workbook->addFormat();
-        $decimal_format->setNumFormat(0.00);
-        $worksheet->setColumn(0, 1, 10);
-        $worksheet->setColumn(2, 2, 50);
-        $worksheet->setColumn(3, 8, 20);
-        $worksheet->setColumn(9, 9, 30);
-        $size = &$workbook->addFormat();
-        $size->setRight(250);
-        $string_format = &$workbook->addFormat();
-        $string_format->setNumFormat('');
-        $upper_left_side_brick = &$workbook->addFormat();
-        $upper_left_side_brick->setBold(900);
-        $upper_left_side_brick->setSize(11);
-        $upper_left_side_brick->setPattern(1);
-        $upper_left_side_brick->setFgColor('green');
-
-        $rzad = 0;
-        $worksheet->write($rzad, 0, 'PESEL.', $upper_left_side_brick);
-        $worksheet->write($rzad, 1, 'SymbolAbsencji', $upper_left_side_brick);
-        $worksheet->write($rzad, 2, 'dataod', $upper_left_side_brick);
-        $worksheet->write($rzad, 3, 'datado', $upper_left_side_brick);
-        $worksheet->write($rzad, 4, 'DataRozlicenia', $upper_left_side_brick);
-        $worksheet->write($rzad, 5, 'dni', $upper_left_side_brick);
-        $worksheet->write($rzad, 6, 'DniRob', $upper_left_side_brick);
-        $worksheet->write($rzad, 7, 'GodzRob', $upper_left_side_brick);
-        $worksheet->write($rzad, 8, 'NaZadanie', $upper_left_side_brick);
-        $i = 1;
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_excel']);
-        $this->BladZapytania($polaczenie, $_POST['zapytanie_excel'], 'Eksport MPK');
-        $rzad++;
-        while ($dane = mysqli_fetch_array($wykonaj)) {
-
-            if ($dane['id_status'] == 3) {
-                $zapytanieutlop = "SELECT p.PESEL
-FROM [SaturnNET].[dbo].[vPracownicy]  p
-where p.Numer='" . $dane['numer_ewidencyjny'] . "'";
-                $e1 = odbc_exec($hr_polaczenie, $zapytanieutlop) OR DIE(odbc_error());
-                $wynik = odbc_fetch_array($e1);
-                $pesel = $wynik['PESEL'];
-
-                $datapoczatek = new DateTime($dane['poczatek_wolnego']);
-                $datakoniec = new DateTime($dane['koniec_wolnego']);
-                $poczatekwolnego = date_format($datapoczatek, 'Y-m-d') . ' 00:00:00.000';
-                $koniec_wolnego = date_format($datakoniec, 'Y-m-d') . ' 00:00:00.000';
-                $datarozliczenia = date('Y-m-d') . ' 00:00:00.000';
-                $zadanie = 0;
-                if ($dane['id_kategorii'] == 4) $zadanie = 1;
-
-                $worksheet->write($rzad, 0, $pesel);
-                $worksheet->write($rzad, 1, $dane['kod']);
-                $worksheet->write($rzad, 2, $poczatekwolnego);
-                $worksheet->write($rzad, 3, $koniec_wolnego);
-                $worksheet->write($rzad, 4, $datarozliczenia);
-                $worksheet->write($rzad, 5, $dane['liczba_dni_eksport']);
-                $worksheet->write($rzad, 6, $dane['liczba_dni_eksport']);
-                $worksheet->write($rzad, 7, $dane['liczba_dni_eksport'] * 8);
-                $worksheet->write($rzad, 8, $zadanie);
-                $zapytaniezapisz = "UPDATE wniosek SET id_status='9', login_hr='" . $_SESSION['ewnioski_full_name'] . "', data_hr=now()
-                      WHERE id='" . $dane['id'] . "' ";
-                //$wykonajzapisz = mysqli_query($polaczenie, $zapytaniezapisz);
-                $this->BladZapytania($polaczenie, $zapytaniezapisz, $_SESSION['ewnioski_login']);
-                $this->ZapiszLog('Zapytanie;' . $zapytaniezapisz, $_SESSION['ewnioski_login']);
-                $i++;
-                $rzad++;
-            }
-        }
-        $workbook->close();
-        mysqli_close($polaczenie);
-        odbc_close($hr_polaczenie);
-        exit;
-    }
-
     function EksportSaturnXLSX()
     {
 
         $polaczenie = $this->MysqliConnect();
         $hr_polaczenie = $this->HrPolaczenie();
         $rok = date('Y');
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("NieobUzup");
-        $objPHPExcel->getProperties()->setSubject("NieobUzup");
-        $objPHPExcel->getProperties()->setDescription("NieobUzup");
-
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'PESEL');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'SymbolAbsencji');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'DataOd');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'DataDo');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'DataRozliczenia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Dni');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'DniRob');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'GodzRob');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'NaZadanie');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'NumerEwidencyjny');
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_excel']);
-        $this->BladZapytania($polaczenie, $_POST['zapytanie_excel'], 'Eksport MPK');
+        $objPHPExcel = $this->NowyArkuszXlsx("NieobUzup", ['A' => 20, 'B' => 10, 'C' => 20, 'D' => 20, 'E' => 20, 'F' => 10, 'G' => 10, 'H' => 10, 'I' => 10], [
+            'PESEL',
+            'SymbolAbsencji',
+            'DataOd',
+            'DataDo',
+            'DataRozliczenia',
+            'Dni',
+            'DniRob',
+            'GodzRob',
+            'NaZadanie',
+            'NumerEwidencyjny',
+        ]);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_excel']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport MPK');
         $licznik = 2;
         if (mysqli_num_rows($wykonaj) > 0) {
             while ($dane = mysqli_fetch_array($wykonaj)) {
@@ -181,16 +61,7 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "'";
                     $eksport = $dane['liczba_dni_eksport'] * $dzielnik;
                     $objPHPExcel->setActiveSheetIndex(0);
                     if (!is_int($eksport) or $spr == '1') {
-                        $objPHPExcel->getActiveSheet()->getStyle('A' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                        $objPHPExcel->getActiveSheet()->getStyle('B' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                        $objPHPExcel->getActiveSheet()->getStyle('C' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                        $objPHPExcel->getActiveSheet()->getStyle('D' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                        $objPHPExcel->getActiveSheet()->getStyle('E' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                        $objPHPExcel->getActiveSheet()->getStyle('F' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                        $objPHPExcel->getActiveSheet()->getStyle('G' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                        $objPHPExcel->getActiveSheet()->getStyle('H' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                        $objPHPExcel->getActiveSheet()->getStyle('I' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
-                        $objPHPExcel->getActiveSheet()->getStyle('J' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
+                        $this->KolorujWierszXlsx($objPHPExcel, $licznik, 'A', 'J', 'FFFF0000');
                     }
                     $objPHPExcel->getActiveSheet()->SetCellValue('A' . $licznik, $pesel);
                     $objPHPExcel->getActiveSheet()->SetCellValue('B' . $licznik, $dane['kod']);
@@ -216,7 +87,9 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "'";
 
         // Praca zdalna
         $PobranePozycjeId = [];
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_praca_zdalna_excel']);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_praca_zdalna_excel']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport praca zdalna');
         if (mysqli_num_rows($wykonaj) > 0) {
             while ($dane = mysqli_fetch_array($wykonaj)) {
                 $zapytanieutlop = "SELECT p.PESEL,k.pozostalo, k.pozostalogodziny
@@ -251,22 +124,9 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "'";
             mysqli_query($polaczenie, $zapytaniezapisz) OR DIE(mysqli_error($polaczenie));
         }
 
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('NieobUzup');
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
         mysqli_close($polaczenie);
         odbc_close($hr_polaczenie);
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="NieobUzup.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
-        // Echo done
+        $this->WyslijArkuszXlsx($objPHPExcel, 'NieobUzup.xlsx', 'NieobUzup');
     }
 
     function EksportZwolnieniaXLSX()
@@ -274,65 +134,27 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "'";
 
         $polaczenie = $this->MysqliConnect();
         $hr_polaczenie = $this->HrPolaczenie();
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("Zwolnienia");
-        $objPHPExcel->getProperties()->setSubject("Zwolnienia");
-        $objPHPExcel->getProperties()->setDescription("Zwolnienia");
-
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(25);
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Imię i nazwisko');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Numer ewidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Pesel');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Liczba godzin');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Data zwolnienia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Data odpracowania');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Godzina rozpoczęcia ');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Przedział czasowy zmiany godzin');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Rodzaj');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Status');
-        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Dane kierownika');
-        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Osoba akceptująca');
-        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Data akceptacji');
-        $objPHPExcel->getActiveSheet()->SetCellValue('N1', 'Data pobrania przez HR');
-        $objPHPExcel->getActiveSheet()->SetCellValue('O1', 'Data wpisania');
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_excel_zwolnienia']);
-        $this->BladZapytania($polaczenie, $_POST['zapytanie_excel_zwolnienia'], 'Eksport MPK');
+        $objPHPExcel = $this->NowyArkuszXlsx("Zwolnienia", ['A' => 30, 'B' => 20, 'C' => 15, 'D' => 15, 'E' => 15, 'F' => 20, 'G' => 20, 'H' => 20, 'I' => 20, 'J' => 30, 'K' => 30, 'L' => 30, 'M' => 25, 'N' => 25, 'O' => 25], [
+            'Imię i nazwisko',
+            'Numer ewidencyjny',
+            'Pesel',
+            'Liczba godzin',
+            'Data zwolnienia',
+            'Data odpracowania',
+            'Godzina rozpoczęcia ',
+            'Przedział czasowy zmiany godzin',
+            'Rodzaj',
+            'Status',
+            'Dane kierownika',
+            'Osoba akceptująca',
+            'Data akceptacji',
+            'Data pobrania przez HR',
+            'Data wpisania',
+        ]);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_excel_zwolnienia']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport MPK');
         if (mysqli_num_rows($wykonaj) > 0) {
             $licznik = 2;
             while ($dane = mysqli_fetch_array($wykonaj)) {
@@ -373,24 +195,9 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "'";
             }
         }
 
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('Zwolnienia');
-
-
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
         mysqli_close($polaczenie);
         odbc_close($hr_polaczenie);
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="Zwolnienia.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
-        // Echo done
+        $this->WyslijArkuszXlsx($objPHPExcel, 'Zwolnienia.xlsx', 'Zwolnienia');
     }
 
     function EksportZwolnieniaWidokXLSX()
@@ -398,65 +205,27 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "'";
 
         $polaczenie = $this->MysqliConnect();
         $hr_polaczenie = $this->HrPolaczenie();
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("Zwolnienia");
-        $objPHPExcel->getProperties()->setSubject("Zwolnienia");
-        $objPHPExcel->getProperties()->setDescription("Zwolnienia");
-
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(25);
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Imię i nazwisko');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Numer ewidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Pesel');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Liczba godzin');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Data zwolnienia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Data odpracowania');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Godzina rozpoczęcia ');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Przedział czasowy zmiany godzin');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Rodzaj');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Status');
-        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Dane kierownika');
-        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Osoba akceptująca');
-        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Data akceptacji');
-        $objPHPExcel->getActiveSheet()->SetCellValue('N1', 'Data pobrania przez HR');
-        $objPHPExcel->getActiveSheet()->SetCellValue('O1', 'Data wpisania');
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_excel_widok']);
-        $this->BladZapytania($polaczenie, $_POST['zapytanie_excel_widok'], 'Eksport MPK');
+        $objPHPExcel = $this->NowyArkuszXlsx("Zwolnienia", ['A' => 30, 'B' => 20, 'C' => 15, 'D' => 15, 'E' => 15, 'F' => 20, 'G' => 20, 'H' => 20, 'I' => 20, 'J' => 30, 'K' => 30, 'L' => 30, 'M' => 25, 'N' => 25, 'O' => 25], [
+            'Imię i nazwisko',
+            'Numer ewidencyjny',
+            'Pesel',
+            'Liczba godzin',
+            'Data zwolnienia',
+            'Data odpracowania',
+            'Godzina rozpoczęcia ',
+            'Przedział czasowy zmiany godzin',
+            'Rodzaj',
+            'Status',
+            'Dane kierownika',
+            'Osoba akceptująca',
+            'Data akceptacji',
+            'Data pobrania przez HR',
+            'Data wpisania',
+        ]);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_excel_widok']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport MPK');
         if (mysqli_num_rows($wykonaj) > 0) {
             $licznik = 2;
             while ($dane = mysqli_fetch_array($wykonaj)) {
@@ -493,89 +262,33 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
 
         }
 
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('Zwolnienia');
-
-
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
         mysqli_close($polaczenie);
         odbc_close($hr_polaczenie);
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="Zwolnienia.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
-        // Echo done
+        $this->WyslijArkuszXlsx($objPHPExcel, 'Zwolnienia.xlsx', 'Zwolnienia');
     }
     function EksportPracaZdalnaCzasPracyXLSX()
     {
 
         $polaczenie = $this->MysqliConnect();
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("Czas pracy zdalnej");
-        $objPHPExcel->getProperties()->setSubject("Czas pracy zdalnej");
-        $objPHPExcel->getProperties()->setDescription("Czas pracy zdalnej");
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Numer ewidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Nazwisko');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Imię');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Dzień pracy');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Czas pracy');
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_excel_praca_zdalna_czas_pracy']);
-        $this->BladZapytania($polaczenie, $_POST['zapytanie_excel_praca_zdalna_czas_pracy'], 'Eksport MPK');
+        $objPHPExcel = $this->NowyArkuszXlsx("Czas pracy zdalnej", ['A' => 20, 'B' => 30, 'C' => 30, 'D' => 20, 'E' => 20], [
+            'Numer ewidencyjny',
+            'Nazwisko',
+            'Imię',
+            'Dzień pracy',
+            'Czas pracy',
+        ]);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_excel_praca_zdalna_czas_pracy']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport MPK');
         if (mysqli_num_rows($wykonaj) > 0) {
             $licznik = 2;
             while ($dane = mysqli_fetch_array($wykonaj)) {
-                $data_rozpoczenia=date_create($dane['data_rozpoczecia']);
-                $data_zakonczenia=date_create($dane['data_zakonczenia']);
-                $data_wznowienia=date_create($dane['data_wznowienia']);
-                $data_wstrzymania=date_create($dane['data_wstrzymania']);
-                $czas_pracy = $data_zakonczenia->diff($data_rozpoczenia);
-                $czas_przerwy= $data_wznowienia->diff($data_wstrzymania);
-                $godzina_pracy=$czas_pracy->format('%h');
-                $minuta_pracy=$czas_pracy->format('%i');
-                $godzina_przerwy=$czas_przerwy->format('%h');
-                $minuta_przerwy=$czas_przerwy->format('%i');
-                $godzina=$godzina_pracy-$godzina_przerwy;
-                $minuta=$minuta_pracy-$minuta_przerwy;
-                if($minuta<0)
-                {
-                    $godzina--;
-                    $minuta=60+$minuta;
-                }
+                [$godzina, $minuta] = $this->CzasPracyZdalnej($dane);
                 $objPHPExcel->getActiveSheet()->SetCellValue('A' . $licznik, $dane['numer_ewidencyjny']);
                 $objPHPExcel->getActiveSheet()->SetCellValue('B' . $licznik, $dane['nazwisko']);
                 $objPHPExcel->getActiveSheet()->SetCellValue('C' . $licznik, $dane['imie']);
-                $objPHPExcel->getActiveSheet()->SetCellValue('D' . $licznik, date_create($dane['data_rozpoczecia'])->format('Y-m-d'));
+                $objPHPExcel->getActiveSheet()->SetCellValue('D' . $licznik, date_create((string)$dane['data_rozpoczecia'])->format('Y-m-d'));
                 $objPHPExcel->getActiveSheet()->SetCellValue('E' . $licznik, $godzina.':'.$minuta);
                 $licznik++;
 
@@ -583,64 +296,25 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
 
         }
 
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('Czas pracy zdalnej');
-
-
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
         mysqli_close($polaczenie);
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="Czas pracy zdalnej.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
+        $this->WyslijArkuszXlsx($objPHPExcel, 'Czas pracy zdalnej.xlsx', 'Czas pracy zdalnej');
     }
     function EksportPracaZdalnaAkcjeXLSX()
     {
 
         $polaczenie = $this->MysqliConnect();
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("Praca zdalna");
-        $objPHPExcel->getProperties()->setSubject("Praca zdalna");
-        $objPHPExcel->getProperties()->setDescription("Praca zdalna");
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('f')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Numer ewidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Nazwisko');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Imię');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Data akcji');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Typ akcji');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Numer wpisującego');
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_excel_praca_zdalna']);
-        $this->BladZapytania($polaczenie, $_POST['zapytanie_excel_praca_zdalna'], 'Eksport praca zdalna');
+        $objPHPExcel = $this->NowyArkuszXlsx("Praca zdalna", ['A' => 20, 'B' => 30, 'C' => 30, 'D' => 30, 'E' => 20, 'F' => 20], [
+            'Numer ewidencyjny',
+            'Nazwisko',
+            'Imię',
+            'Data akcji',
+            'Typ akcji',
+            'Numer wpisującego',
+        ]);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_excel_praca_zdalna']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport praca zdalna');
         if (mysqli_num_rows($wykonaj) > 0) {
             $licznik = 2;
             while ($dane = mysqli_fetch_array($wykonaj)) {
@@ -654,22 +328,8 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
             }
 
         }
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('Praca zdalna');
-
-
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
         mysqli_close($polaczenie);
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="Praca zdalna.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
+        $this->WyslijArkuszXlsx($objPHPExcel, 'Praca zdalna.xlsx', 'Praca zdalna');
     }
     function EksportSaturnXLSXWniosekWRCP()
     {
@@ -677,55 +337,23 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
         $polaczenie = $this->MysqliConnect();
         $hr_polaczenie = $this->HrPolaczenie();
         $rok = date('Y');
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("NieobUzup");
-        $objPHPExcel->getProperties()->setSubject("NieobUzup");
-        $objPHPExcel->getProperties()->setDescription("NieobUzup");
-
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'PESEL');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'SymbolAbsencji');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'DataOd');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'DataDo');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'DataRozliczenia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Dni');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'DniRob');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'GodzRob');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'NaZadanie');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'NumerEwidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Błąd');
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_excel2']);
-        $this->BladZapytania($polaczenie, $_POST['zapytanie_excel2'], 'Eksport MPK');
+        $objPHPExcel = $this->NowyArkuszXlsx("NieobUzup", ['A' => 20, 'B' => 10, 'C' => 20, 'D' => 20, 'E' => 20, 'F' => 10, 'G' => 10, 'H' => 10, 'I' => 10, 'K' => 20], [
+            'PESEL',
+            'SymbolAbsencji',
+            'DataOd',
+            'DataDo',
+            'DataRozliczenia',
+            'Dni',
+            'DniRob',
+            'GodzRob',
+            'NaZadanie',
+            'NumerEwidencyjny',
+            'Błąd',
+        ]);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_excel2']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport MPK');
         if (mysqli_num_rows($wykonaj) > 0) {
             $licznik = 2;
             while ($dane = mysqli_fetch_array($wykonaj)) {
@@ -775,16 +403,7 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
                     }
 
                     if ($blad!='') {
-                        $objPHPExcel->getActiveSheet()->getStyle('A' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                        $objPHPExcel->getActiveSheet()->getStyle('B' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                        $objPHPExcel->getActiveSheet()->getStyle('C' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                        $objPHPExcel->getActiveSheet()->getStyle('D' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                        $objPHPExcel->getActiveSheet()->getStyle('E' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                        $objPHPExcel->getActiveSheet()->getStyle('F' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                        $objPHPExcel->getActiveSheet()->getStyle('G' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                        $objPHPExcel->getActiveSheet()->getStyle('H' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                        $objPHPExcel->getActiveSheet()->getStyle('I' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                        $objPHPExcel->getActiveSheet()->getStyle('J' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
+                        $this->KolorujWierszXlsx($objPHPExcel, $licznik, 'A', 'J', $kolor);
                     }
                     $objPHPExcel->getActiveSheet()->SetCellValue('A' . $licznik, $pesel);
                     $objPHPExcel->getActiveSheet()->SetCellValue('B' . $licznik, $dane['kod']);
@@ -796,7 +415,7 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
                     $objPHPExcel->getActiveSheet()->SetCellValue('H' . $licznik, $eksport);
                     $objPHPExcel->getActiveSheet()->SetCellValue('I' . $licznik, $zadanie);
                     $objPHPExcel->getActiveSheet()->SetCellValue('J' . $licznik, $dane['numer_ewidencyjny']);
-                    $objPHPExcel->getActiveSheet()->SetCellValue('k' . $licznik, $blad);
+                    $objPHPExcel->getActiveSheet()->SetCellValue('K' . $licznik, $blad);
                     $licznik++;
                 }
             }
@@ -805,7 +424,9 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
 
         // Praca zdalna
         $PobranePozycjeId = [];
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_praca_zdalna_excel']);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_praca_zdalna_excel']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport praca zdalna');
         if (mysqli_num_rows($wykonaj) > 0) {
             while ($dane = mysqli_fetch_array($wykonaj)) {
                 $zapytanieutlop = "SELECT p.PESEL,k.pozostalo, k.pozostalogodziny
@@ -834,25 +455,9 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
             }
         }
 
-
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('NieobUzup');
-
-
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
         mysqli_close($polaczenie);
         odbc_close($hr_polaczenie);
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="NieobUzup.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
-        // Echo done
+        $this->WyslijArkuszXlsx($objPHPExcel, 'NieobUzup.xlsx', 'NieobUzup');
     }
     function EksportEnovaXLSXWniosekWRCP()
     {
@@ -860,58 +465,24 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
         $polaczenie = $this->MysqliConnect();
         $hr_polaczenie = $this->HrPolaczenie();
         $rok = date('Y');
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("NieobUzup");
-        $objPHPExcel->getProperties()->setSubject("NieobUzup");
-        $objPHPExcel->getProperties()->setDescription("NieobUzup");
-
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Class');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Pracownik:Class');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Pracownik:Kod');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Definicja:Nazwa');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Okres.Od');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Okres.Do');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'OdGodziny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'DoGodziny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Czas');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Urlop.Przyczyna');
-        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Pracownik:Nazwisko imie');
-
+        $objPHPExcel = $this->NowyArkuszXlsx("NieobUzup", ['A' => 25, 'B' => 20, 'C' => 20, 'D' => 20, 'E' => 20, 'F' => 15, 'G' => 15, 'H' => 15, 'I' => 15, 'J' => 15, 'K' => 15], [
+            'Class',
+            'Pracownik:Class',
+            'Pracownik:Kod',
+            'Definicja:Nazwa',
+            'Okres.Od',
+            'Okres.Do',
+            'OdGodziny',
+            'DoGodziny',
+            'Czas',
+            'Urlop.Przyczyna',
+            'Pracownik:Nazwisko imie',
+        ]);
         $licznik = 2;
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_excel2_enova']);
-        $this->BladZapytania($polaczenie, $_POST['zapytanie_excel2_enova'], 'Eksport eWniosek Enova');
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_excel2_enova']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport eWniosek Enova');
         if (mysqli_num_rows($wykonaj) > 0) {
 
             while ($dane = mysqli_fetch_array($wykonaj)) {
@@ -929,7 +500,6 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
                         if ($dane['id_kategorii'] == 4) $zadanie = "NaŻądanie";
                         //   if ($dane['liczba_dni_eksport'] > 0 and $dane['liczba_dni_eksport'] < 1) $dane['liczba_dni_eksport'] = 1; mkoziej rozmowa 22.05.2019
 
-
                         $objPHPExcel->setActiveSheetIndex(0);
                         $blad = '';
                         $miesiacaktualny = date('m', strtotime($datarozliczenia));
@@ -941,12 +511,7 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
                           }
 
                           if ($blad!='') {
-                              $objPHPExcel->getActiveSheet()->getStyle('A' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                              $objPHPExcel->getActiveSheet()->getStyle('B' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                              $objPHPExcel->getActiveSheet()->getStyle('C' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                              $objPHPExcel->getActiveSheet()->getStyle('D' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                              $objPHPExcel->getActiveSheet()->getStyle('E' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
-                              $objPHPExcel->getActiveSheet()->getStyle('F' . $licznik)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($kolor);
+                              $this->KolorujWierszXlsx($objPHPExcel, $licznik, 'A', 'F', $kolor);
                                  }*/
                         $iloscgodzinenova = '';
                         $odgodziny = '';
@@ -992,7 +557,9 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
 
         // Praca zdalna
         $PobranePozycjeId = [];
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_praca_zdalna_excel']);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_praca_zdalna_excel']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport praca zdalna');
         if (mysqli_num_rows($wykonaj) > 0) {
             while ($dane = mysqli_fetch_array($wykonaj)) {
                 $LiczbaDni =  Urlopy::PobierzIloscDniRoboczych($dane['DataOd'], $dane['DataDo']);
@@ -1008,91 +575,37 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
             }
         }
 
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('Enova');
-
-
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
         mysqli_close($polaczenie);
         odbc_close($hr_polaczenie);
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="Enova.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
-        // Echo done
+        $this->WyslijArkuszXlsx($objPHPExcel, 'Enova.xlsx', 'Enova');
     }
     function EksportStanGodzin()
     {
         $polaczenie = $this->MysqliConnect();
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("Stan urlopu i nadgodzin");
-        $objPHPExcel->getProperties()->setSubject("Stan urlopu i nadgodzin");
-        $objPHPExcel->getProperties()->setDescription("Stan urlopu i nadgodzin");
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(18);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(28);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(14);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(14);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(16);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(22);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(24);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(26);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(18);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(14);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('R')->setWidth(25);
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Nr ewidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Nazwisko');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Imię');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Mpk i grupa');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Kierownik');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'UW');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'UW - godziny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'UW zaległy');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'UŻ');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Ilość nadgodzin nadpracowanych (limit 260)');
-        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'NADGODZINY');
-        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Godziny odpracowane (+)');
-        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Godziny do odpracowania (-)');
-        $objPHPExcel->getActiveSheet()->SetCellValue('N1', 'Niedopracowania (bez wniosku)');
-        $objPHPExcel->getActiveSheet()->SetCellValue('O1', 'Stan godzin (archiwalne)');
-        $objPHPExcel->getActiveSheet()->SetCellValue('P1', 'Stan na dzień');
-        $objPHPExcel->getActiveSheet()->SetCellValue('Q1', 'Data importu');
-        $objPHPExcel->getActiveSheet()->SetCellValue('R1', 'Osoba importująca');
-
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_excel_stan_godzin']);
-        $this->BladZapytania($polaczenie, $_POST['zapytanie_excel_stan_godzin'], 'Eksport MPK');
+        $objPHPExcel = $this->NowyArkuszXlsx("Stan urlopu i nadgodzin", ['A' => 18, 'B' => 25, 'C' => 25, 'D' => 25, 'E' => 28, 'F' => 10, 'G' => 14, 'H' => 14, 'I' => 10, 'J' => 30, 'K' => 16, 'L' => 22, 'M' => 24, 'N' => 26, 'O' => 18, 'P' => 14, 'Q' => 20, 'R' => 25], [
+            'Nr ewidencyjny',
+            'Nazwisko',
+            'Imię',
+            'Mpk i grupa',
+            'Kierownik',
+            'UW',
+            'UW - godziny',
+            'UW zaległy',
+            'UŻ',
+            'Ilość nadgodzin nadpracowanych (limit 260)',
+            'NADGODZINY',
+            'Godziny odpracowane (+)',
+            'Godziny do odpracowania (-)',
+            'Niedopracowania (bez wniosku)',
+            'Stan godzin (archiwalne)',
+            'Stan na dzień',
+            'Data importu',
+            'Osoba importująca',
+        ]);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_excel_stan_godzin']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport MPK');
         if (mysqli_num_rows($wykonaj) > 0) {
             $licznik = 2;
             while ($dane = mysqli_fetch_array($wykonaj)) {
@@ -1116,212 +629,47 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
                 $objPHPExcel->getActiveSheet()->SetCellValue('O' . $licznik, $dane['stan_godzin']);
                 $objPHPExcel->getActiveSheet()->setCellValueExplicit('P' . $licznik,
                     ($dane['stan_na_dzien'] == '0000-00-00' ? '' : (string)$dane['stan_na_dzien']),
-                    PHPExcel_Cell_DataType::TYPE_STRING);
+                    \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $objPHPExcel->getActiveSheet()->SetCellValue('Q' . $licznik, $dane['data_importu']);
                 $objPHPExcel->getActiveSheet()->SetCellValue('R' . $licznik, $dane['nazwisko_import'] . ' ' . $dane['imie_import']);
                 $licznik++;
             }
         }
 
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('Stan godzin');
-
-        // Save Excel 2007 file
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         mysqli_close($polaczenie);
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="Stan urlopu i nadgodzin.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
-    }
-    function NadgodzinyExcelExport($zapytanie)
-    {
-        $polaczenie=$this->MysqliConnect();
-        $zapytanie = base64_decode($zapytanie);
-
-        set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-        require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';
-
-        // Creating a workbook
-        $workbook = new Spreadsheet_Excel_Writer();
-
-        // sending HTTP headers
-        $workbook->send('Ewidencja_nadgodzin_' . date("Y_m_d_H_i_s") . '.xls');
-
-        // Creating a worksheet
-        $worksheet =& $workbook->addWorksheet('Wiazki poprawiane');
-        $workbook->setVersion(8);
-        $worksheet->setInputEncoding('UTF-8');
-
-        // Tworzenie formatu
-        $decimal_format =& $workbook->addFormat();
-        $decimal_format->setNumFormat(0.00);
-
-        $worksheet->setInputEncoding('UTF-8');
-        $worksheet->setColumn(0, 1, 10);
-        $worksheet->setColumn(2, 25, 25);
-
-        $size =& $workbook->addFormat();
-        $size->setRight(250);
-
-        $string_format =& $workbook->addFormat();
-        $string_format->setNumFormat('');
-
-        $upper_left_side_brick =& $workbook->addFormat();
-        $upper_left_side_brick->setBold(900);
-        $upper_left_side_brick->setSize(12);
-        $upper_left_side_brick->setPattern(1);
-        $upper_left_side_brick->setFgColor('green');
-
-        $rzad = 0;
-        $wykonaj = mysqli_query($polaczenie, $zapytanie);
-        $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_login']);
-        if (mysqli_num_rows($wykonaj) > 0) {
-            $worksheet->write($rzad, 0, 'Lp', $upper_left_side_brick);
-            $worksheet->write($rzad, 1, 'Id', $upper_left_side_brick);
-            $worksheet->write($rzad, 2, 'Numer_ewidencyjny', $upper_left_side_brick);
-            $worksheet->write($rzad, 3, 'Nazwisko', $upper_left_side_brick);
-            $worksheet->write($rzad, 4, 'Imię', $upper_left_side_brick);
-            $worksheet->write($rzad, 5, 'Ilość nadgodzin', $upper_left_side_brick);
-            $worksheet->write($rzad, 6, 'Data nadgodzin', $upper_left_side_brick);
-            $worksheet->write($rzad, 7, 'Wprowadził', $upper_left_side_brick);
-            $worksheet->write($rzad, 8, 'Akceptacja Kierownik', $upper_left_side_brick);
-            $worksheet->write($rzad, 9, 'Akceptacja HR', $upper_left_side_brick);
-            $worksheet->write($rzad, 10, 'Zaakceptował/a (Kierownik)', $upper_left_side_brick);
-            $worksheet->write($rzad, 11, 'Zaakceptował/a HR', $upper_left_side_brick);
-            $worksheet->write($rzad, 12, 'Data akceptacji Kierownik', $upper_left_side_brick);
-            $worksheet->write($rzad, 13, 'Data akceptacji HR', $upper_left_side_brick);
-            $worksheet->write($rzad, 14, 'Grupa', $upper_left_side_brick);
-            $worksheet->write($rzad, 15, 'Data wprowadzenia', $upper_left_side_brick);
-            $worksheet->write($rzad, 16, 'Uzasadnienie', $upper_left_side_brick);
-            $worksheet->write($rzad, 17, 'Anulowano', $upper_left_side_brick);
-            $worksheet->write($rzad, 18, 'Brygadzista notatka', $upper_left_side_brick);
-            $worksheet->write($rzad, 19, 'Kierownik notatka', $upper_left_side_brick);
-            $worksheet->write($rzad, 20, 'Hr notatka', $upper_left_side_brick);
-            $rzad++;
-            while ($dane = mysqli_fetch_array($wykonaj)) {
-                $pracownik = explode(" ", trim($dane['pracownik']));
-                if(!isset($pracownik[1])) $pracownik[1] = "";
-                $worksheet->write($rzad, 0, $rzad);
-                $worksheet->write($rzad, 1, $dane['id']);
-                $worksheet->write($rzad, 2, $dane['numer_ewidencyjny']);
-                $worksheet->write($rzad, 3, $pracownik[1]);
-                $worksheet->write($rzad, 4, $pracownik[0]);
-                $_g_val = $dane['ilosc_godzin_nadliczbowych'];
-                if ($_g_val !== null) {
-                    $_g_h = (int)floor((float)$_g_val);
-                    $_g_m = (int)round(((float)$_g_val - $_g_h) * 60);
-                    $worksheet->write($rzad, 5, $_g_h . ' h ' . str_pad($_g_m, 2, '0', STR_PAD_LEFT) . ' min');
-                } else {
-                    $worksheet->write($rzad, 5, $_g_val);
-                }
-                $worksheet->write($rzad, 6, $dane['data_wykonywania_nadgodzin']);
-                $worksheet->write($rzad, 7, $dane['wprowadzil']);
-                $worksheet->write($rzad, 8, $dane['akceptacja_kierownik']);
-                $worksheet->write($rzad, 9, $dane['akceptacja_dzial_personalny']);
-                $worksheet->write($rzad, 10, $dane['akceptacja_kierownik_user']);
-                $worksheet->write($rzad, 11, $dane['akceptacja_dzial_personalny_user']);
-                $worksheet->write($rzad, 12, $dane['data_akceptacji_kierownik']);
-                $worksheet->write($rzad, 13, $dane['data_akceptacji_dzial_personalny']);
-                $worksheet->write($rzad, 14, $dane['grupa']);
-                $worksheet->write($rzad, 15, $dane['data_wprowadzenia']);
-                $worksheet->write($rzad, 16, $dane['uzasadnienie']);
-                $worksheet->write($rzad, 17, $dane['anulowano']);
-                $worksheet->write($rzad, 18, $dane['brygadzista_notatka']);
-                $worksheet->write($rzad, 19, $dane['kierownik_notatka']);
-                $worksheet->write($rzad, 20, $dane['hr_notatka']);
-                $rzad++;
-            }
-            $rzad += 3;
-            $worksheet->write($rzad, 1, "Wygenerowano: " . date('Y-m-d H:i:s') . " Przez: " . $_SESSION['ewnioski_full_name']);
-// Let's send the file
-            $workbook->close();
-            exit;
-        }
+        $this->WyslijArkuszXlsx($objPHPExcel, 'Stan urlopu i nadgodzin.xlsx', 'Stan godzin');
     }
     function NadgodzinyExcelExportXLSX($zapytanie)
     {
-        $zapytanie = base64_decode($zapytanie);
         $polaczenie = $this->MysqliConnect();
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("Ewidencja nadgodzin");
-        $objPHPExcel->getProperties()->setSubject("Ewidencja nadgodzin");
-        $objPHPExcel->getProperties()->setDescription("Ewidencja nadgodzin");
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('R')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('S')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('T')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('U')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('V')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('W')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('X')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('Y')->setWidth(25);
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Lp');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Id');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Numer_ewidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Nazwisko');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Imię');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Ilość nadgodzin');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Data nadgodzin');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Typ wpisu');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Wprowadził');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Data odpracowania');
-        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Akceptacja Kierownik');
-        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Akceptacja HR');
-        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Zaakceptował/a (Kierownik)');
-        $objPHPExcel->getActiveSheet()->SetCellValue('N1', 'Zaakceptował/a HR');
-        $objPHPExcel->getActiveSheet()->SetCellValue('O1', 'Data akceptacji Kierownik');
-        $objPHPExcel->getActiveSheet()->SetCellValue('P1', 'Data akceptacji HR');
-        $objPHPExcel->getActiveSheet()->SetCellValue('Q1', 'Grupa');
-        $objPHPExcel->getActiveSheet()->SetCellValue('R1', 'Data wprowadzenia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('S1', 'Uzasadnienie');
-        $objPHPExcel->getActiveSheet()->SetCellValue('T1', 'Uzasadnienie poziom II');
-        $objPHPExcel->getActiveSheet()->SetCellValue('U1', 'Uzasadnienie poziom III');
-        $objPHPExcel->getActiveSheet()->SetCellValue('V1', 'Anulowano');
-        $objPHPExcel->getActiveSheet()->SetCellValue('W1', 'Brygadzista notatka');
-        $objPHPExcel->getActiveSheet()->SetCellValue('X1', 'Kierownik notatka');
-        $objPHPExcel->getActiveSheet()->SetCellValue('Y1', 'Hr notatka');
-
+        $objPHPExcel = $this->NowyArkuszXlsx("Ewidencja nadgodzin", ['A' => 10, 'B' => 25, 'C' => 25, 'D' => 25, 'E' => 25, 'F' => 25, 'G' => 25, 'H' => 25, 'I' => 25, 'J' => 30, 'K' => 25, 'L' => 25, 'M' => 25, 'N' => 25, 'O' => 25, 'P' => 25, 'Q' => 25, 'R' => 25, 'S' => 25, 'T' => 25, 'U' => 25, 'V' => 25, 'W' => 25, 'X' => 25, 'Y' => 25], [
+            'Lp',
+            'Id',
+            'Numer_ewidencyjny',
+            'Nazwisko',
+            'Imię',
+            'Ilość nadgodzin',
+            'Data nadgodzin',
+            'Typ wpisu',
+            'Wprowadził',
+            'Data odpracowania',
+            'Akceptacja Kierownik',
+            'Akceptacja HR',
+            'Zaakceptował/a (Kierownik)',
+            'Zaakceptował/a HR',
+            'Data akceptacji Kierownik',
+            'Data akceptacji HR',
+            'Grupa',
+            'Data wprowadzenia',
+            'Uzasadnienie',
+            'Uzasadnienie poziom II',
+            'Uzasadnienie poziom III',
+            'Anulowano',
+            'Brygadzista notatka',
+            'Kierownik notatka',
+            'Hr notatka',
+        ]);
         $wykonaj = mysqli_query($polaczenie, $zapytanie);
         $rzad = 1;
         $this->BladZapytania($polaczenie, $zapytanie, 'Eksport MPK');
@@ -1362,7 +710,7 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
                 $objPHPExcel->getActiveSheet()->setCellValueExplicit(
                     'J' . $licznik,
                     $_data_odpracowania,
-                    PHPExcel_Cell_DataType::TYPE_STRING
+                    \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING
                 );
 
                 $objPHPExcel->getActiveSheet()->SetCellValue('K' . $licznik,  $dane['akceptacja_kierownik']);
@@ -1386,73 +734,25 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
             }
         }
 
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('Ewidencja_nadgodzin');
-
-        // Save Excel 2007 file
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         mysqli_close($polaczenie);
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="Ewidencja_nadgodzin.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
+        $this->WyslijArkuszXlsx($objPHPExcel, 'Ewidencja_nadgodzin.xlsx', 'Ewidencja_nadgodzin');
     }
     function RaportWejscXLSX($zapytanie)
     {
-        $zapytanie = $zapytanie;
         $polaczenie = $this->MysqliConnect();
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("Stan wejść");
-        $objPHPExcel->getProperties()->setSubject("Stan wejść");
-        $objPHPExcel->getProperties()->setDescription("Stan wejść");
-
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(25);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(25);
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Lp');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Numer ewidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Imię');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Nazwisko');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Godzina wejścia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Godzina wyjścia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Pobyt');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Typ pobytu');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Miejsce wejścia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Grupa');
-
+        $objPHPExcel = $this->NowyArkuszXlsx("Stan wejść", ['A' => 10, 'B' => 25, 'C' => 25, 'D' => 25, 'E' => 25, 'F' => 25, 'G' => 25, 'H' => 25, 'I' => 25, 'J' => 25], [
+            'Lp',
+            'Numer ewidencyjny',
+            'Imię',
+            'Nazwisko',
+            'Godzina wejścia',
+            'Godzina wyjścia',
+            'Pobyt',
+            'Typ pobytu',
+            'Miejsce wejścia',
+            'Grupa',
+        ]);
         $wykonaj = mysqli_query($polaczenie,$zapytanie);
         $rzad=1;
         $this->BladZapytania($polaczenie, $zapytanie, 'Eksport MPK');
@@ -1510,86 +810,31 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
 
         }
 
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('Ewidencja_nadgodzin');
-
-
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         mysqli_close($polaczenie);
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="Stan wejść.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
-        // Echo done
+        $this->WyslijArkuszXlsx($objPHPExcel, 'Stan wejść.xlsx', 'Ewidencja_nadgodzin');
     }
     function RaportUrlopyWidoczneXLSX($zapytanie)
     {
 
         $polaczenie = $this->MysqliConnect();
-        /** Error reporting */
-        error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
 
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("Raport urlopów");
-        $objPHPExcel->getProperties()->setSubject("Raport urlopów");
-        $objPHPExcel->getProperties()->setDescription("Raport urlopów");
-
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(30);
-
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Lp');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Data wpisania');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Imię i nazwisko');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Numer ewidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Nieobecność od');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Nieobecność do');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Liczba dni urlopu wnioskowanego');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Rodzaj nieobecności');
-        $objPHPExcel->getActiveSheet()->SetCellValue('I1', 'Imię dziecka');
-        $objPHPExcel->getActiveSheet()->SetCellValue('J1', 'Osoba akceptujaca');
-        $objPHPExcel->getActiveSheet()->SetCellValue('K1', 'Data akceptacji');
-        $objPHPExcel->getActiveSheet()->SetCellValue('L1', 'Zakład');
-        $objPHPExcel->getActiveSheet()->SetCellValue('M1', 'Przełożony');
-        $objPHPExcel->getActiveSheet()->SetCellValue('N1', 'Status wniosku');
-        $objPHPExcel->getActiveSheet()->SetCellValue('O1', 'Data pobrania przez HR');
-
+        $objPHPExcel = $this->NowyArkuszXlsx("Raport urlopów", ['A' => 10, 'B' => 30, 'C' => 30, 'D' => 30, 'E' => 30, 'F' => 30, 'G' => 30, 'H' => 30, 'I' => 30, 'J' => 30, 'K' => 30, 'L' => 30, 'M' => 30, 'N' => 30, 'O' => 30], [
+            'Lp',
+            'Data wpisania',
+            'Imię i nazwisko',
+            'Numer ewidencyjny',
+            'Nieobecność od',
+            'Nieobecność do',
+            'Liczba dni urlopu wnioskowanego',
+            'Rodzaj nieobecności',
+            'Imię dziecka',
+            'Osoba akceptujaca',
+            'Data akceptacji',
+            'Zakład',
+            'Przełożony',
+            'Status wniosku',
+            'Data pobrania przez HR',
+        ]);
         $wykonaj = mysqli_query($polaczenie,$zapytanie);
         $this->BladZapytania($polaczenie, $zapytanie, 'Eksport MPK');
         $licznik = 2;
@@ -1619,7 +864,9 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
         }
 
         // Praca zdalna
-        $wykonaj = mysqli_query($polaczenie, $_POST['zapytanie_praca_zdalna_excel']);
+        $zapytanieEksportu = $this->PobierzZapytanie($_POST['zapytanie_praca_zdalna_excel']);
+        $wykonaj = mysqli_query($polaczenie, $zapytanieEksportu);
+        $this->BladZapytania($polaczenie, $zapytanieEksportu, 'Eksport praca zdalna');
         if (mysqli_num_rows($wykonaj) > 0) {
             while ($dane = mysqli_fetch_array($wykonaj)) {
                 $LiczbaDni =  Urlopy::PobierzIloscDniRoboczych($dane['DataOd'], $dane['DataDo']);
@@ -1641,23 +888,8 @@ where p.Numer='" . $dane['numer_ewidencyjny'] . "' ";
             }
         }
 
-        // Rename sheet
-        $objPHPExcel->getActiveSheet()->setTitle('Raport urlopów');
-
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-
-        // We'll be outputting an excel file
-        header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         mysqli_close($polaczenie);
-        // It will be called file.xls
-        header('Content-Disposition: attachment; filename="Stan urlopu.xlsx"');
-
-        $objWriter->save('php://output');
-        exit;
-        // Echo done
+        $this->WyslijArkuszXlsx($objPHPExcel, 'Stan urlopu.xlsx', 'Raport urlopów');
     }
-
 
 }

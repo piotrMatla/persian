@@ -9,31 +9,22 @@
 /**
  * Główny plik programu
  */
-set_include_path(get_include_path().PATH_SEPARATOR.__DIR__.'/klasy');
-spl_autoload_register(function ($class) {
-    foreach(explode(PATH_SEPARATOR,get_include_path()) as $path) {
-        if(file_exists($path."/".$class.".php")) require_once($path."/".$class.".php");
-    }
-});
+require_once __DIR__ . '/bootstrap.php';
 
 $a = new Common;
 $h = new HTML;
 $a->UstawieniaStandardowe();
 $a->CzyZalogowany();
 
-if(isset($_GET['wyloguj']))
-{
+if (isset($_GET['wyloguj'])) {
     $a->Wyloguj();
 }
-$h->PoczatekStrony();
-if(isset($_GET['tym']))
-{
-    if($_GET['tym']==1) $h->Instrukcja();
-    else        $h->LogoW();
-
-}
-else{
-$h->LogoW();
+if (isset($_GET['tym']) && $_GET['tym'] == 1) {
+    $h->PoczatekStrony('Instrukcja');
+    $h->Instrukcja();
+} else {
+    $h->PoczatekStrony('Strona główna');
+    $h->LogoW();
 }
 
 $h->KoniecStrony();

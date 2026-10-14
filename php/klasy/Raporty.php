@@ -63,729 +63,118 @@ class Raporty extends Common
         'niedopracowania', 'stan_na_dzien', 'brygadzista'
     );
     /**
-     * Menu szukania danych
+     * Kolumny raportów, które użytkownik może ukryć: numer kolumny => nazwa
+     */
+    const KOLUMNY_URLOPY = [
+        1 => 'Lp.', 2 => 'ID', 3 => 'Wybór globalny', 4 => 'Data wpisania wniosku', 5 => 'Imię i nazwisko',
+        6 => 'Numer ewidencyjny', 44 => 'Numer wpisującego', 7 => 'Nieobecność od', 8 => 'Nieobecność do',
+        9 => 'Data odpracowania', 10 => 'Liczba dni urlopu wnioskowanego', 11 => 'Rodzaj nieobecności ',
+        12 => 'Imię dziecka', 13 => 'Data urodzenia dziecka', 14 => 'Osoba akceptująca', 15 => 'Data akceptacji',
+        16 => 'Przełożony', 17 => 'Status wniosku', 45 => 'Profil', 18 => 'Pobrane przez HR',
+        19 => 'Wygeneruj wniosek PDF', 20 => 'Zaakceptuj wniosek', 21 => 'Anuluj wniosek', 22 => 'Odzrzuć wniosek',
+        43 => 'Tylko mój MPK',
+    ];
+    const KOLUMNY_ZWOLNIENIA = [
+        23 => 'Lp.', 24 => 'ID', 25 => 'Wybór globalny', 26 => 'Data wpisania ', 27 => 'Imię i nazwisko',
+        28 => 'Numer ewidencyjny', 29 => 'Liczba godzin zwolnienia', 30 => 'Data zwolnienia z godzin',
+        31 => 'Data odpracowania', 32 => 'Godzina rozpoczęcia pracy', 33 => 'Przedział czasowy zmiany godzin',
+        34 => 'Rodzaj zwolnienia', 35 => 'Status zwolnienia', 36 => 'Dane kierownik', 37 => 'Akceptacja kierownika',
+        38 => 'Pobrane przez HR', 39 => 'Wygeneruj wniosek PDF', 40 => 'Zaakceptuj wniosek', 41 => 'Anuluj wniosek',
+        42 => 'Odzrzuć wniosek', 43 => 'Tylko mój MPK',
+    ];
+
+    /**
+     * Menu szukania danych (zakres dat, liczba wyników, widoczność kolumn)
      */
     function PokazMenuSzukaniaDanych()
     {
-        // if(isset($_POST['ewnioski_data_koncowa'])) $_SESSION['ewnioski_data_koncowa'] = trim($_POST['ewnioski_data_koncowa']);
-        // if(isset($_POST['ewnioski_data_poczatkowa'])) $_SESSION['ewnioski_data_poczatkowa'] = trim($_POST['ewnioski_data_poczatkowa']);
-        ?>
-
-           <form method="POST" id="form_1">
-                <input type="hidden" name="szukaj" class="border"/>
-                <div align="center">
-                    <font class="font4"><b>Data początkowa
-                            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                            Data Końcowa</b></font><br/>
-                    <input type="date" maxlength="10" name="ewnioski_data_poczatkowa"
-                           class="border"
-                           value="<?php echo $_SESSION['ewnioski_data_poczatkowa']; ?>"/>
-                    &nbsp; &nbsp;&nbsp;
-                    <input type="date" maxlength="10" name="ewnioski_data_koncowa"
-                           class="border" value="<?php echo $_SESSION['ewnioski_data_koncowa']; ?>"/>
-                    <br/>
-                    <br/>
-                    <br>
-                    <b>Liczba wyników</b>
-                    <select name="limit_stron">
-                        <?php
-                        for ($i = 100; $i <= 10000;) {
-                            ?>
-                            <option <?php if ($i == $_SESSION['ewnioski_limit_stron']) echo " SELECTED"; ?>
-                                value="<?php echo $i ?>"><?php echo $i ?></option>
-                            <?php
-                            $i += 100;
-                        }
-                        ?>
-
-                    </select>
-                    <br><br>
-
-                    <input type="submit" class="border" style="color: green; font-size: 20px; font-weight: bolder"
-                           value="Szukaj"/>
-                </div>
-            </form>
-            <br/>
-
-        <form method="POST">
-            <input type="hidden" name="wyczysc_filtry"/>
-            <input type="submit" value="Wyczyść filtry" class="border"/>
-        </form>
- <div id="submenu">
-            <form method="POST">
-                <table border="2" align="center" class="wysrodkoj">
-                <?php
-                 $widocznosc = array();
-                        $widocznosc = explode(',', $_SESSION['ewnioski_widocznosc']);
-                        if(isset($_GET['urlop'])) {?>
-                    <tr>
-                        <td>Nazwa kolumny urlopu</td>
-                        <td>Lp.</td>
-                        <td>ID</td>
-                         <td>Wybór globalny</td>
-                        <td>Data wpisania wniosku</td>
-                        <td>Imię i nazwisko</td>
-                        <td>Numer ewidencyjny</td>
-                        <td>Numer wpisującego</td>
-                        <td>Nieobecność od</td>
-                        <td>Nieobecność do</td>
-                        <td>Data odpracowania</td>
-                        <td>Liczba dni urlopu wnioskowanego</td>
-                        <td>Rodzaj nieobecności </td>
-                        <td>Imię dziecka</td>
-                        <td>Data urodzenia dziecka</td>
-                        <td>Osoba akceptująca</td>
-                        <td>Data akceptacji</td>
-                        <td>Przełożony</td>
-                        <td>Status wniosku</td>
-                        <td>Profil</td>
-                        <td>Pobrane przez HR</td>
-                        <td>Wygeneruj wniosek PDF</td>
-                        <td>Zaakceptuj wniosek</td>
-                        <td>Anuluj wniosek</td>
-                        <td>Odzrzuć wniosek</td>
-                        <td>Tylko mój MPK</td>
-                    </tr>
-                    <tr>
-                        <?php
-
-                        ?>
-                        <td>Ukryj</td>
-
-                        <td> <input type="checkbox" id="1" value="1" <?php
-                            if (array_search('1', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?> onchange="Ajax('../php/ZmianaWidocznosc.php', '1')" /></td>
-                        <td> <input type="checkbox" id="2" value="2" <?php
-                            if (array_search('2', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '2')"/></td>
-                        <td> <input type="checkbox" id="3" value="3" <?php
-                            if (array_search('3', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '3')"/></td>
-                        <td> <input type="checkbox" id="4" value="4" <?php
-                            if (array_search('4', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '4')"/></td>
-                        <td> <input type="checkbox" id="5" value="5" <?php
-                            if (array_search('5', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '5')"/></td>
-                        <td> <input type="checkbox" id="6" value="6" <?php
-                            if (array_search('6', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '44')"/></td>
-                               <td> <input type="checkbox" id="44" value="44" <?php
-                            if (array_search('44', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '6')"/></td>
-                        <td> <input type="checkbox" id="7" value="7" <?php
-                            if (array_search('7', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '7')"/></td>
-                        <td> <input type="checkbox" id="8" value="8" <?php
-                            if (array_search('8', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '8')"/></td>
-                        <td> <input type="checkbox" id="9" value="9" <?php
-                            if (array_search('9', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '9')"/></td>
-                        <td> <input type="checkbox" id="10" value="10" <?php
-                            if (array_search('10', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '10')"/></td>
-                        <td> <input type="checkbox" id="11" value="11" <?php
-                            if (array_search('11', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '11')"/></td>
-                        <td> <input type="checkbox" id="12" value="12" <?php
-                            if (array_search('12', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '12')"/></td>
-                        <td> <input type="checkbox" id="13" value="13" <?php
-                            if (array_search('13', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '13')"/></td>
-                        <td> <input type="checkbox" id="14" value="14" <?php
-                            if (array_search('14', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '14')"/></td>
-                        <td> <input type="checkbox" id="15" value="15" <?php
-                            if (array_search('15', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '15')"/></td>
-                        <td> <input type="checkbox" id="16" value="16" <?php
-                            if (array_search('16', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '16')"/></td>
-                        <td> <input type="checkbox" id="17" value="17" <?php
-                            if (array_search('17', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '17')"/></td>
-                            <td> <input type="checkbox" id="45" value="45" <?php
-                            if (array_search('45', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '45')"/></td>
-                        <td> <input type="checkbox" id="18" value="18" <?php
-                            if (array_search('18', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '18')"/></td>
-                        <td> <input type="checkbox" id="19" value="19" <?php
-                            if (array_search('19', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '19')"/></td>
-                        <td> <input type="checkbox" id="20" value="20" <?php
-                            if (array_search('20', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '20')"/></td>
-                        <td> <input type="checkbox" id="21" value="21" <?php
-                            if (array_search('21', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '21')"/></td>
-                        <td> <input type="checkbox" id="22" value="22" <?php
-                            if (array_search('22', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '22')"/></td>
-                            <td> <input type="checkbox" id="43" value="43" <?php
-                            if (array_search('43', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '43')"/></td>
-                    </tr>
-                    <?php
-                    }
-                       if(isset($_GET['zwolnienia'])) { ?>
-
-                     <tr>
-                        <td>Nazwa kolumny zwolnienia</td>
-                        <td>Lp.</td>
-                        <td>ID</td>
-                         <td>Wybór globalny</td>
-                        <td>Data wpisania </td>
-                        <td>Imię i nazwisko</td>
-                        <td>Numer ewidencyjny</td>
-                        <td>Liczba godzin zwolnienia</td>
-                        <td>Data zwolnienia z godzin</td>
-                        <td>Data odpracowania</td>
-                        <td>Godzina rozpoczęcia pracy</td>
-                        <td>Przedział czasowy zmiany godzin</td>
-                        <td>Rodzaj zwolnienia</td>
-                        <td>Status zwolnienia</td>
-                        <td>Dane kierownik</td>
-                        <td>Akceptacja kierownika</td>
-                        <td>Pobrane przez HR</td>
-                        <td>Wygeneruj wniosek PDF</td>
-                        <td>Zaakceptuj wniosek</td>
-                        <td>Anuluj wniosek</td>
-                        <td>Odzrzuć wniosek</td>
-                        <td>Tylko mój MPK</td>
-                    </tr>
-                    <tr>
-                        <td>Ukryj</td>
-
-                        <td> <input type="checkbox" id="23" value="23" <?php
-                            if (array_search('23', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?> onchange="Ajax('../php/ZmianaWidocznosc.php', '23')" /></td>
-                        <td> <input type="checkbox" id="24" value="24" <?php
-                            if (array_search('24', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '24')"/></td>
-                        <td> <input type="checkbox" id="25" value="25" <?php
-                            if (array_search('25', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '25')"/></td>
-                        <td> <input type="checkbox" id="26" value="26" <?php
-                            if (array_search('26', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '26')"/></td>
-                        <td> <input type="checkbox" id="27" value="27" <?php
-                            if (array_search('27', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '27')"/></td>
-                        <td> <input type="checkbox" id="28" value="28" <?php
-                            if (array_search('28', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '28)"/></td>
-                        <td> <input type="checkbox" id="29" value="29" <?php
-                            if (array_search('29', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '29')"/></td>
-                        <td> <input type="checkbox" id="30" value="30" <?php
-                            if (array_search('30', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '30')"/></td>
-                        <td> <input type="checkbox" id="31" value="31" <?php
-                            if (array_search('31', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '31')"/></td>
-                        <td> <input type="checkbox" id="32" value="32" <?php
-                            if (array_search('32', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '32')"/></td>
-                        <td> <input type="checkbox" id="33" value="33" <?php
-                            if (array_search('33', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '33')"/></td>
-                        <td> <input type="checkbox" id="34" value="34" <?php
-                            if (array_search('34', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '34')"/></td>
-                        <td> <input type="checkbox" id="35" value="35" <?php
-                            if (array_search('35', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '35')"/></td>
-                        <td> <input type="checkbox" id="36" value="36" <?php
-                            if (array_search('36', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '36')"/></td>
-                        <td> <input type="checkbox" id="37" value="37" <?php
-                            if (array_search('37', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '37')"/></td>
-                        <td> <input type="checkbox" id="38" value="38" <?php
-                            if (array_search('38', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '38')"/></td>
-                        <td> <input type="checkbox" id="39" value="39" <?php
-                            if (array_search('39', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '39')"/></td>
-                        <td> <input type="checkbox" id="40" value="40" <?php
-                            if (array_search('40', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                                }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '40')"/></td>
-                        <td> <input type="checkbox" id="41" value="41" <?php
-                            if (array_search('41', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '41')"/></td>
-                        <td> <input type="checkbox" id="42" value="42" <?php
-                            if (array_search('42', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '42')"/></td>
-                              <td> <input type="checkbox" id="43" value="43" <?php
-                            if (array_search('43', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '43')"/></td>
-
-                    </tr>
-                    <?php } ?>
-                    <tr>
-                        <td align="center" colspan="24">
-                            <form  action="raport.php?wszystkie" method="POST">
-                                <input type="submit" value="Zastosuj filtry widoczności" />
-                            </form>
-                        </td>
-                    </tr>
-                </table>
-                <a id="ukryj" href="#" onclick="$('#submenu').slideUp(1000, null); $(this).hide(); $('#pokaz').show();"><b><h2>Ukryj menu widoczności pól</h2></b></a>
-        </div>
-        <a id="pokaz" href="#" onclick="$('#submenu').slideDown(1000, null); $(this).hide(); $('#ukryj').show();"><b><h2>Pokaż menu widoczności pól</h2></b></a>
-        <?php
+        $this->MenuSzukania('ewnioski_data_poczatkowa', 'ewnioski_data_koncowa');
     }
-     function PokazMenuSzukaniaDanychWejscia()
+
+    /**
+     * Menu szukania danych w raportach wejść i odbić
+     */
+    function PokazMenuSzukaniaDanychWejscia()
     {
+        $this->MenuSzukania('ewnioski_data_poczatkowa_stan_wejsc', 'ewnioski_data_koncowa_stan_wejsc');
+    }
 
+    /**
+     * Formularz zakresu dat i liczby wyników oraz menu widoczności kolumn
+     * @param string $poleOd Nazwa pola (i zmiennej sesyjnej) z datą początkową
+     * @param string $poleDo Nazwa pola (i zmiennej sesyjnej) z datą końcową
+     */
+    private function MenuSzukania(string $poleOd, string $poleDo): void
+    {
         ?>
-
-           <form method="POST" id="form_1">
-                <input type="hidden" name="szukaj" class="border"/>
-                <div align="center">
-                    <font class="font4"><b>Data początkowa
-                            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                            Data Końcowa</b></font><br/>
-                    <input type="date" maxlength="10" name="ewnioski_data_poczatkowa_stan_wejsc"
-                           class="border"
-                           value="<?php echo $_SESSION['ewnioski_data_poczatkowa_stan_wejsc']; ?>"/>
-                    &nbsp; &nbsp;&nbsp;
-                    <input type="date" maxlength="10" name="ewnioski_data_koncowa_stan_wejsc"
-                           class="border" value="<?php echo $_SESSION['ewnioski_data_koncowa_stan_wejsc']; ?>"/>
-                    <br/>
-                    <br/>
-                    <br>
-                    <b>Liczba wyników</b>
+        <div class="toolbar">
+            <form method="POST" id="form_1" class="toolbar-form">
+                <input type="hidden" name="szukaj"/>
+                <label class="field">
+                    <span class="field-label">Data początkowa</span>
+                    <input type="date" name="<?php echo $poleOd; ?>" value="<?php echo htmlspecialchars((string)$_SESSION[$poleOd]); ?>"/>
+                </label>
+                <label class="field">
+                    <span class="field-label">Data końcowa</span>
+                    <input type="date" name="<?php echo $poleDo; ?>" value="<?php echo htmlspecialchars((string)$_SESSION[$poleDo]); ?>"/>
+                </label>
+                <label class="field">
+                    <span class="field-label">Liczba wyników</span>
                     <select name="limit_stron">
-                        <?php
-                        for ($i = 100; $i <= 10000;) {
-                            ?>
-                            <option <?php if ($i == $_SESSION['ewnioski_limit_stron']) echo " SELECTED"; ?>
-                                value="<?php echo $i ?>"><?php echo $i ?></option>
-                            <?php
-                            $i += 100;
-                        }
-                        ?>
-
+                        <?php for ($i = 100; $i <= 10000; $i += 100) { ?>
+                            <option <?php if ($i == $_SESSION['ewnioski_limit_stron']) echo " SELECTED"; ?> value="<?php echo $i ?>"><?php echo $i ?></option>
+                        <?php } ?>
                     </select>
-                    <br><br>
-
-                    <input type="submit" class="border" style="color: green; font-size: 20px; font-weight: bolder"
-                           value="Szukaj"/>
-                </div>
+                </label>
+                <input type="submit" value="Szukaj"/>
             </form>
-            <br/>
-
-        <form method="POST">
-            <input type="hidden" name="wyczysc_filtry"/>
-            <input type="submit" value="Wyczyść filtry" class="border"/>
-        </form>
- <div id="submenu">
-            <form method="POST">
-                <table border="2" align="center" class="wysrodkoj">
-                <?php
-                 $widocznosc = array();
-                        $widocznosc = explode(',', $_SESSION['ewnioski_widocznosc']);
-                        if(isset($_GET['urlop'])) {?>
-                    <tr>
-                        <td>Nazwa kolumny urlopu</td>
-                        <td>Lp.</td>
-                        <td>ID</td>
-                         <td>Wybór globalny</td>
-                        <td>Data wpisania wniosku</td>
-                        <td>Imię i nazwisko</td>
-                        <td>Numer ewidencyjny</td>
-                        <td>Numer wpisującego</td>
-                        <td>Nieobecność od</td>
-                        <td>Nieobecność do</td>
-                        <td>Data odpracowania</td>
-                        <td>Liczba dni urlopu wnioskowanego</td>
-                        <td>Rodzaj nieobecności </td>
-                        <td>Imię dziecka</td>
-                        <td>Data urodzenia dziecka</td>
-                        <td>Osoba akceptująca</td>
-                        <td>Data akceptacji</td>
-                        <td>Przełożony</td>
-                        <td>Status wniosku</td>
-                        <td>Pobrane przez HR</td>
-                        <td>Wygeneruj wniosek PDF</td>
-                        <td>Zaakceptuj wniosek</td>
-                        <td>Anuluj wniosek</td>
-                        <td>Odzrzuć wniosek</td>
-                        <td>Tylko mój MPK</td>
-                    </tr>
-                    <tr>
-                        <?php
-
-                        ?>
-                        <td>Ukryj</td>
-
-                        <td> <input type="checkbox" id="1" value="1" <?php
-                            if (array_search('1', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?> onchange="Ajax('../php/ZmianaWidocznosc.php', '1')" /></td>
-                        <td> <input type="checkbox" id="2" value="2" <?php
-                            if (array_search('2', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '2')"/></td>
-                        <td> <input type="checkbox" id="3" value="3" <?php
-                            if (array_search('3', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '3')"/></td>
-                        <td> <input type="checkbox" id="4" value="4" <?php
-                            if (array_search('4', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '4')"/></td>
-                        <td> <input type="checkbox" id="5" value="5" <?php
-                            if (array_search('5', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '5')"/></td>
-                        <td> <input type="checkbox" id="6" value="6" <?php
-                            if (array_search('6', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '44')"/></td>
-                               <td> <input type="checkbox" id="44" value="44" <?php
-                            if (array_search('44', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '6')"/></td>
-                        <td> <input type="checkbox" id="7" value="7" <?php
-                            if (array_search('7', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '7')"/></td>
-                        <td> <input type="checkbox" id="8" value="8" <?php
-                            if (array_search('8', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '8')"/></td>
-                        <td> <input type="checkbox" id="9" value="9" <?php
-                            if (array_search('9', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '9')"/></td>
-                        <td> <input type="checkbox" id="10" value="10" <?php
-                            if (array_search('10', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '10')"/></td>
-                        <td> <input type="checkbox" id="11" value="11" <?php
-                            if (array_search('11', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '11')"/></td>
-                        <td> <input type="checkbox" id="12" value="12" <?php
-                            if (array_search('12', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '12')"/></td>
-                        <td> <input type="checkbox" id="13" value="13" <?php
-                            if (array_search('13', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '13')"/></td>
-                        <td> <input type="checkbox" id="14" value="14" <?php
-                            if (array_search('14', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '14')"/></td>
-                        <td> <input type="checkbox" id="15" value="15" <?php
-                            if (array_search('15', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '15')"/></td>
-                        <td> <input type="checkbox" id="16" value="16" <?php
-                            if (array_search('16', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '16')"/></td>
-                        <td> <input type="checkbox" id="17" value="17" <?php
-                            if (array_search('17', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '17')"/></td>
-                        <td> <input type="checkbox" id="18" value="18" <?php
-                            if (array_search('18', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '18')"/></td>
-                        <td> <input type="checkbox" id="19" value="19" <?php
-                            if (array_search('19', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '19')"/></td>
-                        <td> <input type="checkbox" id="20" value="20" <?php
-                            if (array_search('20', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '20')"/></td>
-                        <td> <input type="checkbox" id="21" value="21" <?php
-                            if (array_search('21', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '21')"/></td>
-                        <td> <input type="checkbox" id="22" value="22" <?php
-                            if (array_search('22', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '22')"/></td>
-                            <td> <input type="checkbox" id="43" value="43" <?php
-                            if (array_search('43', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '43')"/></td>
-                    </tr>
-                    <?php
-                    }
-                       if(isset($_GET['zwolnienia'])) { ?>
-
-                     <tr>
-                        <td>Nazwa kolumny zwolnienia</td>
-                        <td>Lp.</td>
-                        <td>ID</td>
-                         <td>Wybór globalny</td>
-                        <td>Data wpisania </td>
-                        <td>Imię i nazwisko</td>
-                        <td>Numer ewidencyjny</td>
-                        <td>Liczba godzin zwolnienia</td>
-                        <td>Data zwolnienia z godzin</td>
-                        <td>Data odpracowania</td>
-                        <td>Godzina rozpoczęcia pracy</td>
-                        <td>Przedział czasowy zmiany godzin</td>
-                        <td>Rodzaj zwolnienia</td>
-                        <td>Status zwolnienia</td>
-                        <td>Dane kierownik</td>
-                        <td>Akceptacja kierownika</td>
-                        <td>Pobrane przez HR</td>
-                        <td>Wygeneruj wniosek PDF</td>
-                        <td>Zaakceptuj wniosek</td>
-                        <td>Anuluj wniosek</td>
-                        <td>Odzrzuć wniosek</td>
-                        <td>Tylko mój MPK</td>
-                    </tr>
-                    <tr>
-                        <td>Ukryj</td>
-
-                        <td> <input type="checkbox" id="23" value="23" <?php
-                            if (array_search('23', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?> onchange="Ajax('../php/ZmianaWidocznosc.php', '23')" /></td>
-                        <td> <input type="checkbox" id="24" value="24" <?php
-                            if (array_search('24', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '24')"/></td>
-                        <td> <input type="checkbox" id="25" value="25" <?php
-                            if (array_search('25', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '25')"/></td>
-                        <td> <input type="checkbox" id="26" value="26" <?php
-                            if (array_search('26', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '26')"/></td>
-                        <td> <input type="checkbox" id="27" value="27" <?php
-                            if (array_search('27', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '27')"/></td>
-                        <td> <input type="checkbox" id="28" value="28" <?php
-                            if (array_search('28', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '28)"/></td>
-                        <td> <input type="checkbox" id="29" value="29" <?php
-                            if (array_search('29', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '29')"/></td>
-                        <td> <input type="checkbox" id="30" value="30" <?php
-                            if (array_search('30', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '30')"/></td>
-                        <td> <input type="checkbox" id="31" value="31" <?php
-                            if (array_search('31', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '31')"/></td>
-                        <td> <input type="checkbox" id="32" value="32" <?php
-                            if (array_search('32', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '32')"/></td>
-                        <td> <input type="checkbox" id="33" value="33" <?php
-                            if (array_search('33', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '33')"/></td>
-                        <td> <input type="checkbox" id="34" value="34" <?php
-                            if (array_search('34', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '34')"/></td>
-                        <td> <input type="checkbox" id="35" value="35" <?php
-                            if (array_search('35', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '35')"/></td>
-                        <td> <input type="checkbox" id="36" value="36" <?php
-                            if (array_search('36', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '36')"/></td>
-                        <td> <input type="checkbox" id="37" value="37" <?php
-                            if (array_search('37', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '37')"/></td>
-                        <td> <input type="checkbox" id="38" value="38" <?php
-                            if (array_search('38', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '38')"/></td>
-                        <td> <input type="checkbox" id="39" value="39" <?php
-                            if (array_search('39', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '39')"/></td>
-                        <td> <input type="checkbox" id="40" value="40" <?php
-                            if (array_search('40', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                                }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '40')"/></td>
-                        <td> <input type="checkbox" id="41" value="41" <?php
-                            if (array_search('41', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '41')"/></td>
-                        <td> <input type="checkbox" id="42" value="42" <?php
-                            if (array_search('42', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '42')"/></td>
-                              <td> <input type="checkbox" id="43" value="43" <?php
-                            if (array_search('43', $widocznosc) !== FALSE) {
-                                echo "CHECKED";
-                            }
-                            ?>  onchange="Ajax('../php/ZmianaWidocznosc.php', '43')"/></td>
-
-                    </tr>
-                    <?php } ?>
-                    <tr>
-                        <td align="center" colspan="24">
-                            <form  action="raport.php?wszystkie" method="POST">
-                                <input type="submit" value="Zastosuj filtry widoczności" />
-                            </form>
-                        </td>
-                    </tr>
-                </table>
-                <a id="ukryj" href="#" onclick="$('#submenu').slideUp(1000, null); $(this).hide(); $('#pokaz').show();"><b><h2>Ukryj menu widoczności pól</h2></b></a>
+            <form method="POST" class="toolbar-form">
+                <input type="hidden" name="wyczysc_filtry"/>
+                <input type="submit" value="Wyczyść filtry"/>
+            </form>
+            <?php if (isset($_GET['urlop']) or isset($_GET['zwolnienia'])) { ?>
+                <button type="button" class="btn" onclick="$('#submenu').slideToggle(300);">Widoczność kolumn</button>
+            <?php } ?>
         </div>
-        <a id="pokaz" href="#" onclick="$('#submenu').slideDown(1000, null); $(this).hide(); $('#ukryj').show();"><b><h2>Pokaż menu widoczności pól</h2></b></a>
+        <?php
+        if (isset($_GET['urlop'])) $this->MenuWidocznosciKolumn('Nazwa kolumny urlopu', self::KOLUMNY_URLOPY);
+        if (isset($_GET['zwolnienia'])) $this->MenuWidocznosciKolumn('Nazwa kolumny zwolnienia', self::KOLUMNY_ZWOLNIENIA);
+    }
+
+    /**
+     * Tabela z checkboxami ukrywania kolumn raportu (zapis przez ZmianaWidocznosc.php)
+     * @param string $tytul Nagłówek pierwszej kolumny
+     * @param array $kolumny Numer kolumny => nazwa
+     */
+    private function MenuWidocznosciKolumn(string $tytul, array $kolumny): void
+    {
+        $widocznosc = explode(',', (string)$_SESSION['ewnioski_widocznosc']);
+        ?>
+        <div id="submenu" class="panel column-visibility">
+            <table border="2" align="center" class="wysrodkoj">
+                <tr>
+                    <td><?php echo $tytul; ?></td>
+                    <?php foreach ($kolumny as $nazwa) { ?>
+                        <td><?php echo $nazwa; ?></td>
+                    <?php } ?>
+                </tr>
+                <tr>
+                    <td>Ukryj</td>
+                    <?php foreach (array_keys($kolumny) as $numer) { ?>
+                        <td><input type="checkbox" id="<?php echo $numer; ?>" value="<?php echo $numer; ?>" <?php
+                            if (array_search((string)$numer, $widocznosc) !== false) echo "CHECKED";
+                            ?> onchange="Ajax('../php/ZmianaWidocznosc.php', '<?php echo $numer; ?>')"/></td>
+                    <?php } ?>
+                </tr>
+                <tr>
+                    <td align="center" colspan="<?php echo count($kolumny) + 1; ?>">
+                        <form method="POST">
+                            <input type="submit" value="Zastosuj filtry widoczności"/>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+        </div>
         <?php
     }
       /**
@@ -924,32 +313,32 @@ else
             if((($_SESSION['ewnioski_mpk']=="Ind.667099")!==false or ($_SESSION['ewnioski_mpk']=="Ind.667299 T.HR")!==false))
                 {?>
                      <form method="POST" action="raporty.php?urlop" id="form_excel" >
-                     <input type="hidden" name="zapytanie_excel" value="<?php echo $zapytanieexcel;?>">
-                     <input type="hidden" name="zapytanie_praca_zdalna_excel" value="<?php echo $ZapytaniePracaZdalnaExcelAkceptacjaHr;?>">
+                     <input type="hidden" name="zapytanie_excel" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel); ?>">
+                     <input type="hidden" name="zapytanie_praca_zdalna_excel" value="<?php echo $this->ZapamietajZapytanie($ZapytaniePracaZdalnaExcelAkceptacjaHr); ?>">
                      <input type="hidden" name="data_poczatkowa" value="<?php echo $_SESSION['ewnioski_data_poczatkowa'];?>">
                      <input type="hidden" name="data_koncowa" value="<?php echo $_SESSION['ewnioski_data_koncowa'];?>">
                      <input type="button" value="Eksport do SaturnNET" onclick="document.getElementById('form_excel').submit();" />
                      </form>
                      <br><br>
                       <form method="POST" action="raporty.php?urlop" id="form_excel_widoczne" >
-                     <input type="hidden" name="zapytanie_excel_widoczne" value="<?php echo $zapytanieexcel;?>">
-                     <input type="hidden" name="zapytanie_praca_zdalna_excel" value="<?php echo $ZapytaniePracaZdalnaExcelWniosekWRCP;?>">
+                     <input type="hidden" name="zapytanie_excel_widoczne" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel); ?>">
+                     <input type="hidden" name="zapytanie_praca_zdalna_excel" value="<?php echo $this->ZapamietajZapytanie($ZapytaniePracaZdalnaExcelWniosekWRCP); ?>">
                      <input type="hidden" name="data_poczatkowa" value="<?php echo $_SESSION['ewnioski_data_poczatkowa'];?>">
                      <input type="hidden" name="data_koncowa" value="<?php echo $_SESSION['ewnioski_data_koncowa'];?>">
                      <input type="button" value="Eksport do XLSX" onclick="document.getElementById('form_excel_widoczne').submit();" />
                      </form>
                      <br>
                       <form method="POST" action="raporty.php?urlop" id="form_excel2" >
-                     <input type="hidden" name="zapytanie_excel2" value="<?php echo $zapytanieexcel;?>">
-                     <input type="hidden" name="zapytanie_praca_zdalna_excel" value="<?php echo $ZapytaniePracaZdalnaExcelWniosekWRCP;?>">
+                     <input type="hidden" name="zapytanie_excel2" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel); ?>">
+                     <input type="hidden" name="zapytanie_praca_zdalna_excel" value="<?php echo $this->ZapamietajZapytanie($ZapytaniePracaZdalnaExcelWniosekWRCP); ?>">
                      <input type="hidden" name="data_poczatkowa" value="<?php echo $_SESSION['ewnioski_data_poczatkowa'];?>">
                      <input type="hidden" name="data_koncowa" value="<?php echo $_SESSION['ewnioski_data_koncowa'];?>">
                      <input type="button" value="Eksport do SaturnNET ze statusem wniosek w RCP" onclick="document.getElementById('form_excel2').submit();" />
                      </form>
                      <br>
                        <form method="POST" action="raporty.php?urlop" id="form_excel3" >
-                     <input type="hidden" name="zapytanie_excel2_enova" value="<?php echo $zapytanieexcel;?>">
-                     <input type="hidden" name="zapytanie_praca_zdalna_excel" value="<?php echo $ZapytaniePracaZdalnaExcelWniosekWRCP;?>">
+                     <input type="hidden" name="zapytanie_excel2_enova" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel); ?>">
+                     <input type="hidden" name="zapytanie_praca_zdalna_excel" value="<?php echo $this->ZapamietajZapytanie($ZapytaniePracaZdalnaExcelWniosekWRCP); ?>">
                      <input type="hidden" name="data_poczatkowa" value="<?php echo $_SESSION['ewnioski_data_poczatkowa'];?>">
                      <input type="hidden" name="data_koncowa" value="<?php echo $_SESSION['ewnioski_data_koncowa'];?>">
                      <input type="button" value="Eksport do Enovy ze statusem wniosek w RCP tylko pracownicy PKC" onclick="document.getElementById('form_excel3').submit();" />
@@ -2043,34 +1432,6 @@ LEFT JOIN ewidencja_szkolen.mpk m on m.id=o.id_mpk
         <?php
 mysqli_close($polaczenie);
     }
-     /**
-     * Kolor wiersza w tabeli
-     * @param type $licznik Pozycja z raportu
-     * @return string Kolor wiersza
-     */
-    function KolorWiersza( $licznik)
-    {
-            if ($licznik % 2 == 0) {
-                    $color = '#b5d4b4';
-            } else {
-                    $color = '#d6dbd6';
-            }
-        return $color;
-    }
-     /**
-     * Kolor wiersza w tabeli
-     * @param type $licznik Pozycja z raportu
-     * @return string Kolor wiersza
-     */
-    function KolorWierszaCzerwony( $licznik)
-    {
-            if ($licznik % 2 == 0) {
-                    $color = 'FF0033';
-            } else {
-                    $color = 'CC0033';
-            }
-        return $color;
-    }
     /**
 * Funkacja odpowiedzialan za zmiane statusu wniosku urlopowego
  */
@@ -2100,26 +1461,13 @@ $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_login']);
                             $adresat =$wynik[4];
                             $przedzial = $wynik[5] . " - " . $wynik[6];
                             $akceptujacy=$_SESSION['ewnioski_full_name'];
-                            $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Twój wniosek urlopowy w przedziale czasowym  <br> $przedzial.<br>
-        Został zaakceptowany przez $akceptujacy. </h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://apps/eWnioski/php/raporty.php?urlop > eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
+                            $page = $this->TrescMaila("<h2>Twój wniosek urlopowy w przedziale czasowym  <br> $przedzial.<br>
+                Został zaakceptowany przez $akceptujacy. </h2><br>
+                Aby przejść do programu naciśnij następujący link do <a href=" . Konfiguracja::Pobierz('adres_programu') . "raporty.php?urlop > eWniosków</a>");
                             $this->Wyslij($adresat, 'Akceptacja wniosku urlopowego', $page);
                         }
         $_SESSION['ewnioski_komunikat'] = '<h1><font color="#00aa00">Zaakceptowano wniosek urlopowy.</font></h1>';
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "raporty.php?urlop";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj('raporty.php?urlop');
     }
 /**
 * Funkacja odpowiedzialan za zmiane statusu wniosku urlopowego w przypadku wybrania kilku wniosków
@@ -2156,15 +1504,9 @@ LEFT JOIN ewidencja_szkolen.osoby o on w.numer_ewidencyjny=o.numer_ewidencyjny
                             $adresat =$wynik[4];
                             $przedzial = $wynik[5] . " - " . $wynik[6];
                             $akceptujacy=$_SESSION['ewnioski_full_name'];
-                            $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Twój wniosek urlopowy w przedziale czasowym  <br> $przedzial.<br>
-        Został zaakceptowany przez $akceptujacy. </h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://apps/eWnioski/php/raporty.php?urlop >eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
+                            $page = $this->TrescMaila("<h2>Twój wniosek urlopowy w przedziale czasowym  <br> $przedzial.<br>
+                Został zaakceptowany przez $akceptujacy. </h2><br>
+                Aby przejść do programu naciśnij następujący link do <a href=" . Konfiguracja::Pobierz('adres_programu') . "raporty.php?urlop >eWniosków</a>");
                             $this->Wyslij($adresat, 'Akceptacja wniosku urlopowego', $page);
                         }
                 }
@@ -2178,14 +1520,7 @@ LEFT JOIN ewidencja_szkolen.osoby o on w.numer_ewidencyjny=o.numer_ewidencyjny
             {
                 $_SESSION['ewnioski_komunikat'] = '<h1><font color="red">Następujące wnioski nie zostały zaakceptowane ze względu na inny status niż wpisany: '.$niezmienione.'.</font></h1><br>'.$_SESSION['ewnioski_komunikat'];
             }
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "raporty.php?urlop";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj('raporty.php?urlop');
     }
     /**
 * Funkacja odpowiedzialan za zmiane statusu wniosku urlopowegoprzez dział HR w przypadku wybrania kilku wniosków
@@ -2220,15 +1555,7 @@ LEFT JOIN ewidencja_szkolen.osoby o on w.numer_ewidencyjny=o.numer_ewidencyjny
             {
                 $_SESSION['ewnioski_komunikat'] = '<h1><font color="red">Następujące wnioski nie zostały zaakceptowane ze względu na inny status niż wpisany: '.$niezmienione.'.</font></h1><br>'.$_SESSION['ewnioski_komunikat'];
             }
-        ?>
-
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "raporty.php?urlop";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj('raporty.php?urlop');
     }
        /**
 * Funkacja odpowiedzialan za zmiane statusu wniosku urlopowego
@@ -2256,25 +1583,12 @@ LEFT JOIN ewidencja_szkolen.osoby o on w.numer_ewidencyjny=o.numer_ewidencyjny
                             $adresat =$wynik[4];
                             $przedzial = $wynik[5] . " - " . $wynik[6];
                             $akceptujacy=$_SESSION['ewnioski_full_name'];
-                            $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Twój wniosek urlopowy w przedziale czasowym  <br> $przedzial.<br>
-        Został anulowany przez $akceptujacy. </h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://apps/eWnioski/php/raporty.php?urlop > eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
+                            $page = $this->TrescMaila("<h2>Twój wniosek urlopowy w przedziale czasowym  <br> $przedzial.<br>
+                Został anulowany przez $akceptujacy. </h2><br>
+                Aby przejść do programu naciśnij następujący link do <a href=" . Konfiguracja::Pobierz('adres_programu') . "raporty.php?urlop > eWniosków</a>");
                             $this->Wyslij($adresat, 'Anulowanie wniosku urlopowego', $page);
                         }
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "<?php echo $strona?>";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj($strona);
     }
       /**
 * Funkacja odpowiedzialan za zmiane statusu wniosku urlopowego
@@ -2300,25 +1614,12 @@ LEFT JOIN ewidencja_szkolen.osoby o on w.numer_ewidencyjny=o.numer_ewidencyjny
                             $adresat =$wynik[4];
                             $przedzial = $wynik[5] . " - " . $wynik[6];
                             $akceptujacy=$_SESSION['ewnioski_full_name'];
-                            $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Twój wniosek urlopowy w przedziale czasowym  <br> $przedzial.<br>
-        Został odrzucony przez $akceptujacy. </h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://apps/eWnioski/php/raporty.php?urlop > eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
+                            $page = $this->TrescMaila("<h2>Twój wniosek urlopowy w przedziale czasowym  <br> $przedzial.<br>
+                Został odrzucony przez $akceptujacy. </h2><br>
+                Aby przejść do programu naciśnij następujący link do <a href=" . Konfiguracja::Pobierz('adres_programu') . "raporty.php?urlop > eWniosków</a>");
                             $this->Wyslij($adresat, 'Odrzucenie wniosku urlopowego', $page);
                         }
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "raporty.php?urlop";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj('raporty.php?urlop');
     }
       /**
      * Raport zwolnień wpisanych przez użytkownika
@@ -2410,12 +1711,12 @@ else
                 {?>
                 <br>
                      <form method="POST" action="raporty.php?zwolnienia" id="form_excel" >
-                     <input type="hidden" name="zapytanie_excel_zwolnienia" value="<?php echo $zapytanieexcel;?>">
+                     <input type="hidden" name="zapytanie_excel_zwolnienia" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel); ?>">
                      <input type="button" value="Eksport do RCP widocznych danych" onclick="document.getElementById('form_excel').submit();" />
                      </form>
                      <br>
                       <form method="POST" action="raporty.php?zwolnienia" id="form_excel1" >
-                     <input type="hidden" name="zapytanie_excel_widok" value="<?php echo $zapytanieexcel_z_praca_zdalna;?>">
+                     <input type="hidden" name="zapytanie_excel_widok" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel_z_praca_zdalna); ?>">
                      <input type="button" value="Eksport do Excela widocznych danych" onclick="document.getElementById('form_excel1').submit();" />
                      </form>
                      <br>
@@ -3378,28 +2679,15 @@ $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_login']);
         if ($wynik[4] != '') {
                             $adresat =$wynik[4];
                             $akceptujacy=$_SESSION['ewnioski_full_name'];
-                            $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Twój wniosek zwolnienia z godzin/ zmiany czasu pracy.<br>
-        Został zaakceptowany przez $akceptujacy. </h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://apps/eWnioski/php/raporty.php?urlop > eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
+                            $page = $this->TrescMaila("<h2>Twój wniosek zwolnienia z godzin/ zmiany czasu pracy.<br>
+                Został zaakceptowany przez $akceptujacy. </h2><br>
+                Aby przejść do programu naciśnij następujący link do <a href=" . Konfiguracja::Pobierz('adres_programu') . "raporty.php?urlop > eWniosków</a>");
                             $this->Wyslij($adresat, 'Akceptacja wniosku urlopowego', $page);
                         }
 
 
         $_SESSION['ewnioski_komunikat'] = '<h1><font color="#00aa00">Zaakceptowano wniosek o zwolnienie z godzin/ zmiane godzin.</font></h1>';
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "raporty.php?zwolnienia";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj('raporty.php?zwolnienia');
     }
       /**
 * Funkacja odpowiedzialan za zmiane statusu zwolnienia
@@ -3429,26 +2717,13 @@ LEFT JOIN ewidencja_szkolen.osoby o on w.numer_ewidencyjny=o.numer_ewidencyjny
                             $adresat =$wynik[4];
                             $przedzial = $wynik[5] . "  " . $wynik[6];
                             $akceptujacy=$_SESSION['ewnioski_full_name'];
-                            $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Twój wniosek zwolnienia z godzin/ zmiany czasu pracy w przedziale czasowym  <br> $przedzial.<br>
-        Został anulowany przez $akceptujacy. </h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://apps/eWnioski/php/raporty.php?urlop > eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
+                            $page = $this->TrescMaila("<h2>Twój wniosek zwolnienia z godzin/ zmiany czasu pracy w przedziale czasowym  <br> $przedzial.<br>
+                Został anulowany przez $akceptujacy. </h2><br>
+                Aby przejść do programu naciśnij następujący link do <a href=" . Konfiguracja::Pobierz('adres_programu') . "raporty.php?urlop > eWniosków</a>");
                             $this->Wyslij($adresat, 'Anulowanie wniosku zwolnienia z godzin/ zmiany czasu pracy', $page);
                         }
 
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "<?php echo $strona; ?>";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj($strona);
     }
     /**
 * Funkacja odpowiedzialan za zmiane statusu zwolnienia
@@ -3476,25 +2751,12 @@ LEFT JOIN ewidencja_szkolen.osoby o on w.numer_ewidencyjny=o.numer_ewidencyjny
                             $adresat =$wynik[4];
                             $przedzial = $wynik[5] . "  " . $wynik[6];
                             $akceptujacy=$_SESSION['ewnioski_full_name'];
-                            $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Twój wniosek zwolnienia z godzin/ zmiany czasu pracy w przedziale czasowym  <br> $przedzial.<br>
-        Został odzrzucony przez $akceptujacy. </h2><br>
-        Aby przejść do programu naciśnij następujący link do <a href=http://apps/eWnioski/php/raporty.php?urlop > eWniosków</a>
-         </center>
-                                </body></html>
-                                ";
+                            $page = $this->TrescMaila("<h2>Twój wniosek zwolnienia z godzin/ zmiany czasu pracy w przedziale czasowym  <br> $przedzial.<br>
+                Został odzrzucony przez $akceptujacy. </h2><br>
+                Aby przejść do programu naciśnij następujący link do <a href=" . Konfiguracja::Pobierz('adres_programu') . "raporty.php?urlop > eWniosków</a>");
                             $this->Wyslij($adresat, 'Odrzycenie wniosku zwolnienia z godzin/ zmiany czasu pracy', $page);
                         }
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "raporty.php?zwolnienia";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj('raporty.php?zwolnienia');
     }
     /**
 * Funkacja odpowiedzialan za zmiane statusu zwolnienia w przypadku wybrania kilku wniosków
@@ -3529,14 +2791,7 @@ LEFT JOIN ewidencja_szkolen.osoby o on w.numer_ewidencyjny=o.numer_ewidencyjny
             {
                 $_SESSION['ewnioski_komunikat'] = '<h1><font color="red">Następujące wnioski nie zostały zaakceptowane ze względu na inny status niż wpisany: '.$niezmienione.'.</font></h1><br>'.$_SESSION['ewnioski_komunikat'];
             }
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "raporty.php?zwolnienia";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj('raporty.php?zwolnienia');
     }
     /**
 * Funkacja odpowiedzialan za zmiane statusu zwolnienia dział HR w przypadku wybrania kilku wniosków
@@ -3584,14 +2839,7 @@ LEFT JOIN ewidencja_szkolen.osoby o on w.numer_ewidencyjny=o.numer_ewidencyjny
             {
                 $_SESSION['ewnioski_komunikat'] = '<h1><font color="red">Następujące wnioski nie zostały zaakceptowane ze względu na inny status niż wpisany: '.$niezmienione.'.</font></h1><br>'.$_SESSION['ewnioski_komunikat'];
             }
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "raporty.php?zwolnienia";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj('raporty.php?zwolnienia');
     }
     /**
      * Raport wyjątków związanych z MPK-ami
@@ -4117,12 +3365,7 @@ WHERE  $dodatkowy_warunek
                 $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Wyjątek dla MPK-u  został wpisany do systemu</h3></font>';
             }
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?mpk');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?mpk');
     }
     /**
 * Usuwanie nuemr MPk z tabeli wyjątków
@@ -4139,12 +3382,7 @@ WHERE  $dodatkowy_warunek
                 $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Numer MPk został usuniety</h3></font>';
             }
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?mpk');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?mpk');
     }
      /**
 * Wpisanie wyjątku z numerme Osoby
@@ -4167,12 +3405,7 @@ WHERE  $dodatkowy_warunek
             }
         mysqli_close($polaczenie);
 
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?osoby');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?osoby');
     }
      /**
 * Wpisanie wyjątku z numerme Osoby
@@ -4196,12 +3429,7 @@ WHERE  $dodatkowy_warunek
             }
         mysqli_close($polaczenie);
 
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?osoby');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?osoby');
     }
     /**
 * Usuwanie nuemr osoby z tabeli wyjątków
@@ -4218,12 +3446,7 @@ WHERE  $dodatkowy_warunek
                 $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Osoba została usunieta</h3></font>';
             }
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?osoby');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?osoby');
     }
 /**
  * Sprawdzenia czy dana osoba ma zastępce nie używane po zmianei wersji
@@ -4345,7 +3568,7 @@ WHERE  numer_ewidencyjny='$numerewidencyjny'";
                     <td align="center" class="padding_5_all bg_11 bottom right" colspan="3">
                     <input type="hidden" valu="<?php  ?>" name="nowy">
                         <input type="submit" value="Zaaktualizuj zastępce"  size="30" class="border" />
-                        <input type="hidden" value="<?php echo $_POST['nowy']?>" name="id">
+                        <input type="hidden" value="<?php echo htmlspecialchars((string)($_POST['nowy'] ?? '')) ?>" name="id">
                     </td>
                 </form>
                 </tr>
@@ -4379,12 +3602,7 @@ $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_login']);
                 $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Zastępstwo zostało zaktualizowane.</h3></font>';
             }
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?urlop');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?urlop');
     }
      /**
      * Raport wszystkich osób dostępnych w ewnioskach
@@ -4685,10 +3903,10 @@ WHERE  $dodatkowy_warunek
                         ?>
                 </td>
                   <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                        <?php echo $daneprzelozony[2]; ?>
+                        <?php echo $daneprzelozony[2] ?? ''; ?>
                 </td>
                 <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                        <?php echo $daneprzelozony[0].' '.$daneprzelozony[1]; ?>
+                        <?php echo ($daneprzelozony[0] ?? '').' '.($daneprzelozony[1] ?? ''); ?>
                 </td>
                  <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
                         <?php echo $dane['numer_zastepcy_stan_godzin']; ?>
@@ -4765,7 +3983,12 @@ WHERE  $dodatkowy_warunek
                 <?php
                 $confW = $this->ParseIniE("../conf/confe.ini");
                 $sciezka = $confW['FolderTMP'];
-                $plik = fopen($sciezka . 'ImportUrlopu.txt', "w");
+                $plik = @fopen($sciezka . 'ImportUrlopu.txt', "w");
+                if ($plik === false) {
+                    ?></form></table><?php
+                    $this->Alert('Nie można zapisać pliku tymczasowego', htmlspecialchars($sciezka . 'ImportUrlopu.txt') . ' - sprawdź FolderTMP w conf/confe.ini.', 'error');
+                    return;
+                }
                 $linijka = explode("\n", $_POST['opisexcel']);
                 $a = 1;
                 $tablicabryg = '';
@@ -4990,7 +4213,7 @@ WHERE  $dodatkowy_warunek
     {
         $confW = $this->ParseIniE("../conf/confe.ini");
         $sciezka = $confW['FolderTMP'] . 'ImportUrlopu.txt';
-        $dane = fread(fopen($sciezka, "r"), filesize($sciezka));
+        $dane = (string)@file_get_contents($sciezka);
         $tablica = explode("\n", $dane);
         $polaczenie = $this->MysqliConnect();
         $i = 0;
@@ -5007,7 +4230,7 @@ WHERE  $dodatkowy_warunek
         $komunikatskasuj = '.';
         if ($liczbaskasowanych > 0) $komunikatskasuj = "</br>Skasowano nastepujacą liczbę przestarzałych wierszy z bazy danych:" . $liczbaskasowanych;
 
-        while (list($klucz, $wartosc) = each($tablica)) {
+        foreach ($tablica as $klucz => $wartosc) {
             if (trim($wartosc) == '') continue;
             $danewiersz = explode(';', $wartosc);
 
@@ -5062,12 +4285,7 @@ WHERE  $dodatkowy_warunek
         }
         mysqli_close($polaczenie);
         $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Stan urlopów został wpisany do sytemu. Wpisano ' . $i . ' pozycji do systemu<br>Liczba pozycji z błędami które nie zostały wpisane ' . $i2 . $komunikatskasuj . '</h3></font>';
-        ?>
-        <script type="text/javascript">
-            (window.location = 'index.php?');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('index.php?');
 }
        /**
      * Raport urlopów wpisanych przez użytkownika
@@ -5144,7 +4362,7 @@ WHERE DATE_FORMAT(sg.data_importu,'%Y-%m-%d') >= '".$_SESSION['ewnioski_data_poc
                     color="#00aa00"><?php echo $liczba_rekordow; ?></font></h3>
 
                      <form method="POST" action="raporty.php?stan_urlopu" id="form_excel" >
-                     <input type="hidden" name="zapytanie_excel_stan_godzin" value="<?php echo $zapytanieexcel;?>">
+                     <input type="hidden" name="zapytanie_excel_stan_godzin" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel); ?>">
                      <input type="button" value="Eksport do Excela" onclick="document.getElementById('form_excel').submit();" />
                      </form>
                      <br><br>
@@ -5858,12 +5076,7 @@ mysqli_close($polaczenie);
                 $_SESSION['ewnioski_komunikat'] = '<font color="red"><h3>Nie usunieta żadnych danych z następujacego dnia '.$_POST['usun_data'].' </h3></font>';
             }
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?wczytaj_urlop');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?wczytaj_urlop');
     }
     /**
  * Sprawdzenia czy dana osoba ma zastępce
@@ -5890,7 +5103,7 @@ mysqli_close($polaczenie);
                       $wykonajosoba = mysqli_query($polaczenie, $zapytanieosoba);
                       $daneosoba=mysqli_fetch_row($wykonajosoba);
                       $this->BladZapytania($polaczenie, $zapytanieosoba, $_SESSION['ewnioski_login']);
-                      $osoby.=$daneosoba[0].'- '.$daneosoba[1].' '.$daneosoba[2].', ';
+                      if ($daneosoba) $osoby.=$daneosoba[0].'- '.$daneosoba[1].' '.$daneosoba[2].', ';
                   }
                 $osoby=substr($osoby,0,-2);
            }
@@ -5944,7 +5157,7 @@ mysqli_close($polaczenie);
                     <td align="center" class="padding_5_all bg_11 bottom right" colspan="3">
                     <input type="hidden" valu="<?php  ?>" name="nowy">
                         <input type="button" value="Zaaktualizuj listę osób"  size="30" class="border" onclick="SprawdzZastepstwo()"/>
-                        <input type="hidden" value="<?php echo $_POST['numer_ewidencyjny']?>" name="id">
+                        <input type="hidden" value="<?php echo htmlspecialchars((string)($_POST['numer_ewidencyjny'] ?? '')) ?>" name="id">
                     </td>
                 </form>
                 </tr>
@@ -5968,12 +5181,7 @@ $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_login']);
                 $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Zastępstwo zostało zaktualizowane.</h3></font>';
             }
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?stan_urlopu');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?stan_urlopu');
     }
     function ZmianaKierownikaMail($osoba, $numer,$kierownik)
     {
@@ -5982,29 +5190,15 @@ $this->BladZapytania($polaczenie, $zapytanie, $_SESSION['ewnioski_login']);
         $adresat=$_SESSION['ewnioski_mail'].','.$_SESSION['ewnioski_profil_mail_rcp'];
         $zglaszajacy= $_SESSION['ewnioski_full_name'];
 
-           $page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Nastepująca osoba prawdopodbnie ma źle przypisanego przełożonego. <br>
-        Imię i nazwisko: $osoba <br>
-        Numer ewidencyjny: $numer <br>
-        Dotychczasowy kierownik: $kierownik <br>
-        Imię i nazwisko osoby zgłaszającej: $zglaszajacy <br>        
-        
-         </center>
-                                </body></html>
-                                ";
+           $page = $this->TrescMaila("<h2>Nastepująca osoba prawdopodbnie ma źle przypisanego przełożonego. <br>
+                Imię i nazwisko: $osoba <br>
+                Numer ewidencyjny: $numer <br>
+                Dotychczasowy kierownik: $kierownik <br>
+                Imię i nazwisko osoby zgłaszającej: $zglaszajacy <br>");
                             $this->Wyslij($adresat, 'Zle przypisany przelozony', $page);
 
         $_SESSION['ewnioski_komunikat'] = '<h1><font color="#00aa00">Wysłano maila do działu RCP o zmianę kierownika.</font></h1>';
-        ?>
-        <script type="text/javascript">
-            setTimeout(function () {
-                    window.location.href = "raporty.php?stan_urlopu";
-                },
-                50);
-        </script> <?php
-        exit;
+        $this->Przekieruj('raporty.php?stan_urlopu');
     }
     function ModyfikujPisanieDlaInncyh ()
     {
@@ -6045,24 +5239,12 @@ $dane=mysqli_fetch_row($wykonaj);
 $osoba=$dane[0].' '.$dane[1];
 $numer=$dane[2];
 $adresat='STAR.RCP@motherson.com,'.$dane[3].','.$mailkierownik;
-$page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Nastepująca osoba $tym. <br>
-        Imię i nazwisko: $osoba <br>
-        Numer ewidencyjny: $numer <br>           
-        
-         </center>
-                                </body></html>
-                                ";
+$page = $this->TrescMaila("<h2>Nastepująca osoba $tym. <br>
+                Imię i nazwisko: $osoba <br>
+                Numer ewidencyjny: $numer <br>");
                             $this->Wyslij($adresat, 'Zmiana uprawnien w eWnioskach', $page);
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?<?php echo $strona?>');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?' . $strona);
     }
     function ModyfikujPracaZdalna ()
     {
@@ -6103,23 +5285,12 @@ $dane=mysqli_fetch_row($wykonaj);
 $osoba=$dane[0].' '.$dane[1];
 $numer=$dane[2];
 $adresat='kamil.kolanowski@motherson.com,tymoteusz.surdy@motherson.com,lukasz.chorab@motherson.com,STAR.RCP@motherson.com,'.$dane[3].','.$mailkierownik;
-$page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Nastepująca osoba $tym. <br>
-        Imię i nazwisko: $osoba <br>
-        Numer ewidencyjny: $numer <br>   
-         </center>
-                                </body></html>
-                                ";
+$page = $this->TrescMaila("<h2>Nastepująca osoba $tym. <br>
+                Imię i nazwisko: $osoba <br>
+                Numer ewidencyjny: $numer <br>");
                             $this->Wyslij($adresat, 'Zmiana uprawnien w eWnioskach', $page);
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?<?php echo $strona?>');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?' . $strona);
     }
 /**
      * Raport sprawdzajacy czy zmienił sie jakiś brygadzista
@@ -6332,6 +5503,7 @@ WHERE  stan_na_dzien='".$wynikdata[0]."' ";
          }
          $numer=$numer.$kierownik;
          $numer=substr($numer,0,-1);
+         if ($numer === '') $numer = "''";
          if($_SESSION['ewnioski_sortowanie_sprawdz_zastepce']=='o1.wnioski_dla_innych') $sortowanie='sg.wnioski_dla_innych';
          else $sortowanie=$_SESSION['ewnioski_sortowanie_sprawdz_zastepce'];
 
@@ -6528,6 +5700,7 @@ ORDER BY o.wnioski_dla_innych DESC LIMIT $limit";
             }
          }
          $numerzastepca=implode(',',$numerzastepca);
+         if ($numerzastepca === '') $numerzastepca = "''"; // pusta lista w IN () to błąd składni SQL
 
         $zapytaniedata="Select MAX(stan_na_dzien) from stan_godzin";
         $wykonajdata = mysqli_query($polaczenie, $zapytaniedata);
@@ -6555,6 +5728,7 @@ WHERE  stan_na_dzien='".$wynikdata[0]."' ";
          }
          $numer=$numer.$kierownik;
          $numer=substr($numer,0,-1);
+         if ($numer === '') $numer = "''";
          if($_SESSION['ewnioski_sortowanie_sprawdz_zastepce']=='o1.wnioski_dla_innych') $sortowanie='sg.wnioski_dla_innych';
          else $sortowanie=$_SESSION['ewnioski_sortowanie_sprawdz_zastepce'];
 
@@ -6783,134 +5957,13 @@ $dane=mysqli_fetch_row($wykonaj);
 $osoba=$dane[0].' '.$dane[1];
 $numer=$dane[2];
 $adresat='STAR.RCP@motherson.com,'.$dane[3].','.$mailkierownik;
-$page = "<html><head><meta http-equiv='Content-Type' content='application/xhtml+xml; charset=UTF-8' /></head>
-                                <body align='center'>
-                                <center>
-        <h2>Następująca osoba straciła uprawnienia do podgladu stanu urlopu i pisania wniosku dla innych. <br>
-        Imię i nazwisko: $osoba <br>
-        Numer ewidencyjny: $numer <br>           
-        
-         </center>
-                                </body></html>
-                                ";
+$page = $this->TrescMaila("<h2>Następująca osoba straciła uprawnienia do podgladu stanu urlopu i pisania wniosku dla innych. <br>
+                Imię i nazwisko: $osoba <br>
+                Numer ewidencyjny: $numer <br>");
                             $this->Wyslij($adresat, 'Zmiana uprawnien w eWnioskach', $page);
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?<?php echo $strona?>');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?' . $strona);
 
-    }
-      /**
-     * Raport wejść z systemu RCP
-     */
-    function RaportWejsc()
-    {
-        $polaczenie = $this->MysqliConnect();
-        $rcp_polaczenie = $this->SQLRCPPolaczenie();
-        $licznik_wew = 1;
-       $limit = $_SESSION['ewnioski_limit_stron'];
-        $array1 = array('[Numer identyfikatora]', '[Imie]', '[Nazwisko]', '[Wejscie]');
-        $array2 = array('ewnioski_wejscia_mumer_ewidencyjny', 'ewnioski_wejscia_imie', 'ewnioski_wejscia_nazwisko', 'ewnioski_wejscia_godzina_wejscia');
-        $warunekosoby="[Numer identyfikatora] IN ";
-         $osoby=$_SESSION['ewnioski_login'].',';
-         $dodatkowy_warunek='';
-         $widocznosc = array();
-        $widocznosc = explode(',', $_SESSION['ewnioski_widocznosc']);
-        if((($_SESSION['ewnioski_mpk']=="Ind.667099")!==false or ($_SESSION['ewnioski_mpk']=="Ind.667299 T.HR")!==false) and array_search('43', $widocznosc) === false) {
-$warunekosoby='';
-        }
-        else
-        {
-            $warunek="numer_kierownik=".$_SESSION['ewnioski_login'];
-            $miesieacwstecz=date ("Y-m",mktime(0, 0, 0, date("m")-1, date("d"),   date("Y"))).'-01';
-    $zapytaniespr="SELECT o.numer_ewidencyjny FROM ewidencja_szkolen.osoby o
- WHERE o.numer_zastepcy_stan_godzin LIKE '%".$_SESSION['ewnioski_login']."%' order by id desc";
-
-                $wykonajspr = mysqli_query($polaczenie, $zapytaniespr);
-        $this->BladZapytania($polaczenie, $zapytaniespr, $_SESSION['ewnioski_login']);
-           while ($danespr=mysqli_fetch_array($wykonajspr))
-                  {
-                      $warunek.=" or numer_kierownik='".$danespr[0]."'";
-                  }
-                    $zapytaniesprosoby="SELECT DISTINCT numer_ewidencyjny FROM stan_godzin
-                    WHERE $warunek  and stan_na_dzien> '".$miesieacwstecz."'";
-
-                      $wykonajsprosoby = mysqli_query($polaczenie, $zapytaniesprosoby);
-        $this->BladZapytania($polaczenie, $zapytaniesprosoby, $_SESSION['ewnioski_login']);
-                       while ($danesprosoby=mysqli_fetch_array($wykonajsprosoby))
-                  {
-                      $osoby.=$danesprosoby[0].',';
-                  }
-                  $osoby=substr($osoby,0,-1);
-                  $warunekosoby=" and [Numer identyfikatora] IN (".$osoby.")";
-        }
-        $licznik = 0;
-        for ($i = 0; $i < count($array1); $i++) {
-            if (strlen(trim($_SESSION[$array2[$i]])) > 0) {
-                if($array1[$i]=='[Numer identyfikatora]')  $dodatkowy_warunek .= " AND " . $array1[$i] . " = '" . trim($_SESSION[$array2[$i]]) . "'";
-                    else                     $dodatkowy_warunek .= " AND " . $array1[$i] . " like '%" . trim($_SESSION[$array2[$i]]) . "%'";
-                $licznik++;
-            }
-        }
-        $zapytanie="SELECT  DISTINCT TOP $limit 
-CONVERT(VARCHAR, Data, 112) as dzien,
-CONVERT(VARCHAR, [Wejscie], 108) as godzina,
-[Numer identyfikatora],
-[Nazwisko],
-[Imie],
-(SELECT TOP 1 rv1.[Wejscie] FROM [dbo].[RCP_RegistrationsView_Ewnioski] rv1 WHERE CONVERT(VARCHAR,rv1.[Data],112) = CONVERT(VARCHAR,rv.[Data],112) AND rv1.[Numer identyfikatora] = rv.[Numer identyfikatora] AND rv1.[Wejscie] IS NOT NULL and rv1.[Nazwa czytnika] like 'RCP%')  as Wejscie,
-
-CASE
-WHEN CONVERT(VARCHAR, Wejscie, 108)>'17:00:00' then 
-(SELECT TOP 1 rv2.[Wyjscie] FROM [dbo].[RCP_RegistrationsView_Ewnioski] rv2 WHERE CONVERT(VARCHAR,rv2.[Data],112) = CONVERT(VARCHAR,DATEADD(day, 1 ,rv.Data),112) AND rv2.[Numer identyfikatora] = rv.[Numer identyfikatora] AND rv2.[Wyjscie] IS NOT NULL and rv2.[Nazwa czytnika] like 'RCP%') 
-ELSE
-(SELECT TOP 1 rv2.[Wyjscie] FROM [dbo].[RCP_RegistrationsView_Ewnioski] rv2 WHERE CONVERT(VARCHAR,rv2.[Data],112) = CONVERT(VARCHAR,rv.[Data],112) AND rv2.[Numer identyfikatora] = rv.[Numer identyfikatora] AND rv2.[Wyjscie] IS NOT NULL and rv2.[Nazwa czytnika] like 'RCP%') 
-END as Wyjscie,
-(SELECT TOP 1 Wydzial FROM [EwidencjaPracownikowView] epv WHERe rv.[Numer identyfikatora]=epv.[Numer identyfikatora]) as Wydzial
-FROM [dbo].[RCP_RegistrationsView_Ewnioski] rv
-where [Status weryfikacji] ='Ok'
-and [Nazwa czytnika] like 'RCP%'
-and CONVERT(VARCHAR, [Wejscie], 108) is not NULL
-and CONVERT(VARCHAR, Data, 23) BETWEEN  '".$_SESSION['ewnioski_data_poczatkowa_stan_wejsc']."' and '".$_SESSION['ewnioski_data_koncowa_stan_wejsc']."'
-$warunekosoby $dodatkowy_warunek
-  ORDER BY " . $_SESSION['ewnioski_sortowanie_wejscia'] . ' '. $_SESSION['ewnioski_sortowanie_kierunek'] . "  
-";
-    $this->BladZapytaniaMSSQL($rcp_polaczenie, $zapytanie, $_SESSION['ewnioski_login']);
-    $wykonaj = sqlsrv_query( $rcp_polaczenie, $zapytanie, array(), array( "Scrollable" => 'static' ) ) ;
-
-    $liczba_rekordow = sqlsrv_num_rows( $wykonaj );
-    $this->SprawdzZastepceStanGodzin($_SESSION['ewnioski_login'],$_SESSION['ewnioski_full_name']);
-
-       $ip=$this->PokazIp();
- $ip=str_replace('.','_',$ip);
-      $file='/home/lora/tmp/WWW/eWnioski/xlsx/Stan_godzin_'.$ip.'.xlsx';
-        ?>
-       <br>
-        <form method="POST">
-            <input type="hidden" name="excel_export_wejscia" value="<?php echo $file?>"/>
-            <input type="submit" value="Export widocznych danych do excela"/>
-        </form>
-
-<br><br>
-        <h3>Znaleziono następującą liczbę wpisów w bazie danych: <font
-                    color="#00aa00"><?php echo $liczba_rekordow; ?></font></h3>
-
-           Nie wszystkie wyniki mogą być wyświetlone na stronie.
-    <?php
-        $this->PierwszyWierszWejscia($liczba_rekordow);
-        if ($liczba_rekordow > 0) {
-            $this->DaneWejscia($wykonaj, $liczba_rekordow);
-        } else {
-            ?>
-            </table><br/>
-            <h3>Results found: <font color="#aa0000">0</font></h3>
-            <?php
-        }
-        mysqli_close($polaczenie);
-        sqlsrv_close($rcp_polaczenie);
     }
       /**
      * Raport wejść z systemu RCP
@@ -7168,7 +6221,7 @@ $warunek_having
         ?>
        <br>
         <form method="POST">
-            <input type="hidden" name="excel_export_wejscia" value="<?php echo $zapytanieexcel?>"/>
+            <input type="hidden" name="excel_export_wejscia" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel); ?>"/>
             <input type="submit" value="Export widocznych danych do excela"/>
         </form>
 
@@ -7187,90 +6240,6 @@ $warunek_having
             <?php
         }
         mysqli_close($polaczenie);
-    }
-    /**
- * Wyświetlenie nagłówków i filtrów do raportu wejść
-* @param $liczba Liczba rekordów zwrócona z bazy danych
- */
-    function PierwszyWierszWejscia($liczba)
-    {
-         $polaczenie = $this->MysqliConnect();
-        ?>
-        <table width="100%" cellspacing="0" class="border_top">
-            <tr>
-                <td align="center" class="padding_5_all bg_11 bottom right">
-                    <b>Lp.</b>
-                </td>
-                <td align="center" class="padding_5_all bg_11 bottom border_right">
-                    <a href="?wejscia&sort=[Numer identyfikatora]&raport=wejscia">
-                        <b>Numer ewidencyjny</b></a>
-                </td>
-                <td align="center" class="padding_5_all bg_11 bottom border_right">
-                    <a href="?wejscia&sort=[Imie]&raport=wejscia">
-                        <b>Imię</b></a>
-                </td>
-                <td align="center" class="padding_5_all bg_11 bottom border_right">
-                    <a href="?wejscia&sort=[Nazwisko]&raport=wejscia">
-                        <b> Nazwisko </b></a>
-                </td>
-                <td align="center" class="padding_5_all bg_11 bottom border_right">
-                    <a href="?wejscia&sort=[Wejscie]&raport=wejscia">
-                        <b>Godzina wejścia </b></a>
-                </td>
-                <td align="center" class="padding_5_all bg_11 bottom border_right">
-                    <a href="?wejscia&sort=[Wyjscie]&raport=wejscia">
-                        <b>Godzina wyjścia </b></a>
-                </td>
-                <td align="center" class="padding_5_all bg_11 bottom border_right">
-                   Pobyt
-                </td>
-            </tr>
-            <tr>
-                <td  align="center" class="padding_5_all bg_11 bottom right">
-                    <img src="../img/remove_filter.png"/>
-                </td>
-                   <td  align="center" class="padding_5_all bg_11 bottom right">
-                    <form method="POST">
-                        <input type="number" min="10000" max="999999" name="ewnioski_wejscia_mumer_ewidencyjny" id="filter_id" size="15" class="border"
-                               value="<?php if (isset($_SESSION['ewnioski_wejscia_mumer_ewidencyjny'])) echo trim($_SESSION['ewnioski_wejscia_mumer_ewidencyjny']); ?>"/>
-                        <input type="submit" value="+" class="guzik_dodaj_odejmij"/>
-                    </form>
-                </td>
-                <td  align="center" class="padding_5_all bg_11 bottom right">
-                    <form method="POST">
-                        <input type="text" name="ewnioski_wejscia_imie" id="filter_id" size="20" class="border"
-                               value="<?php if (isset($_SESSION['ewnioski_wejscia_imie'])) echo trim($_SESSION['ewnioski_wejscia_imie']); ?>"/>
-                        <input type="submit" value="+" class="guzik_dodaj_odejmij"/>
-                    </form>
-                </td>
-                <td  align="center" class="padding_5_all bg_11 bottom right">
-                    <form method="POST">
-                        <input type="text" name="ewnioski_wejscia_nazwisko" id="filter_id" size="6" class="border"
-                               onclick="Zaznacz('filter_id')"
-                               value="<?php if (isset($_SESSION['ewnioski_wejscia_nazwisko'])) echo trim($_SESSION['ewnioski_wejscia_nazwisko']); ?>"/>
-                        <input type="submit" value="+" class="guzik_dodaj_odejmij"/>
-                    </form>
-                </td>
-                <td  align="center" class="padding_5_all bg_11 bottom right">
-                    <form method="POST">
-                        <input type="text" name="ewnioski_wejscia_godzina_wejscia" id="filter_id" size="6" class="border"
-                               onclick="Zaznacz('filter_id')"
-                               value="<?php if (isset($_SESSION['ewnioski_wejscia_godzina_wejscia'])) echo trim($_SESSION['ewnioski_wejscia_godzina_wejscia']); ?>"/>
-                        <input type="submit" value="+" class="guzik_dodaj_odejmij"/>
-                    </form>
-                </td>
-                <td  align="center" class="padding_5_all bg_11 bottom right">
-                     <img src="../img/remove_filter.png"/>
-                </td>
-                <td  align="center" class="padding_5_all bg_11 bottom right">
-                    <img src="../img/remove_filter.png"/>
-                </td>
-                 <td  align="center" class="padding_5_all bg_11 bottom right">
-                   <img src="../img/remove_filter.png"/>
-                </td>
-            </tr>
-
-        <?php
     }
     /**
  * Wyświetlenie nagłówków i filtrów do raportu wejść
@@ -7397,168 +6366,6 @@ $warunek_having
             </tr>
 
         <?php
-    }
-    /**
-     * Dane wyplute z bazy
-     * @param $wykonaj Dane z zapytania
-     * @param $liczba Liczba wierszy zwrócona z tabeli
-     */
-    function DaneWejscia($wykonaj, $liczba)
-    {
-        $licznik = 1;
-        $polaczenie = $this->MysqliConnect();
-        $suma=0;
-         error_reporting(E_ALL);
-        /* set_include_path("/home/lora/public_html/Biblioteki/PEAR/pear");
-         require_once '/home/lora/public_html/Biblioteki/Excel/Writer.php';*/
-        /** Include path **/
-        set_include_path(get_include_path() . PATH_SEPARATOR . '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes');
-
-
-        /** PHPExcel */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel.php';
-
-        /** PHPExcel_Writer_Excel2007 */
-        include '/home/lora/public_html/Biblioteki/PHPExcel_1_8/Classes/PHPExcel/Writer/Excel2007.php';
-        // Create new PHPExcel object
-        $objPHPExcel = new PHPExcel();
-
-        // Set properties
-        $objPHPExcel->getProperties()->setCreator("PHP server");
-        $objPHPExcel->getProperties()->setLastModifiedBy("PHP server");
-        $objPHPExcel->getProperties()->setTitle("StanWejsc");
-        $objPHPExcel->getProperties()->setSubject("StanWejsc");
-        $objPHPExcel->getProperties()->setDescription("StanWejsc");
-
-
-        // Add some data
-        $objPHPExcel->setActiveSheetIndex(0);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(10);
-        $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(30);
-        $objPHPExcel->getActiveSheet()->SetCellValue('A1', 'Licznik');
-        $objPHPExcel->getActiveSheet()->SetCellValue('B1', 'Numer ewidencyjny');
-        $objPHPExcel->getActiveSheet()->SetCellValue('C1', 'Imię');
-        $objPHPExcel->getActiveSheet()->SetCellValue('D1', 'Nazwisko');
-        $objPHPExcel->getActiveSheet()->SetCellValue('E1', 'Godzina wejścia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('F1', 'Godzina wyjścia');
-        $objPHPExcel->getActiveSheet()->SetCellValue('G1', 'Pobyt');
-        $objPHPExcel->getActiveSheet()->SetCellValue('H1', 'Grupa');
-
-
-        while ($dane = sqlsrv_fetch_array($wykonaj)) {
-             $color = $this->KolorWiersza($licznik);
-             $licz=0;
-             $czaspracy='';
-             if($dane['Wejscie']==null)
-                 {
-                     $dane['Wejscie']='';
-                     $licz=1;
-                 }
-             if($dane['Wyjscie']==null)
-                 {
-                     $dane['Wyjscie']='';
-                      $licz=1;
-                 }
-             if($licz==0 )
-                 {
-                     $diff = $dane['Wejscie']->diff($dane['Wyjscie']);
-                     $czas=(int)$diff->format('%H');
-                     if($czas<8)
-                         {
-                             $color = $this->KolorWierszaCzerwony($licznik);
-                             $licz=1;
-                         }
-                     $czaspracy=$dane['Wejscie']->diff($dane['Wyjscie']);
-                     $czaspracy=$czaspracy->format('%H:%i');
-
-                 }
-             else
-                 {
-                     $color = $this->KolorWierszaCzerwony($licznik);
-                 }
-             if($dane['Wyjscie']==null) $wyjscie= 'Brak odbicia';
-                     else $wyjscie= date_format($dane['Wyjscie'], 'Y-m-d H:i:s');
-                      if($dane['Wejscie']==null) $wejscie= 'Brak odbicia';
-                     else $wejscie= date_format($dane['Wejscie'], 'Y-m-d H:i:s');
-
-            ?>
-            <tr>
-            <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                        <?php echo $licznik; ?>
-            </td>
-             <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                    <?php echo $dane['Numer identyfikatora']; ?>
-            </td>
-             <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                    <?php echo $dane['Imie']; ?>
-            </td>
-             <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                    <?php echo $dane['Nazwisko']; ?>
-            </td>
-            <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                    <?php
-                    echo $wejscie;
-                     ?>
-            </td>
-             <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-              <?php
-                     echo $wyjscie;
-                     ?>
-            </td>
-             <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                    <?php echo  $czaspracy; ?>
-            </td>
-             <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                    <?php echo $dane['Wydzial']; ?>
-            </td>
-</tr>
-            <?php
-            $wiersz=$licznik+1;
-            if ($licz!=0) {
-                        $objPHPExcel->getActiveSheet()->getStyle('A' . $wiersz)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($color);
-                        $objPHPExcel->getActiveSheet()->getStyle('B' . $wiersz)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($color);
-                        $objPHPExcel->getActiveSheet()->getStyle('C' . $wiersz)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($color);
-                        $objPHPExcel->getActiveSheet()->getStyle('D' . $wiersz)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($color);
-                        $objPHPExcel->getActiveSheet()->getStyle('E' . $wiersz)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($color);
-                        $objPHPExcel->getActiveSheet()->getStyle('F' . $wiersz)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($color);
-                        $objPHPExcel->getActiveSheet()->getStyle('G' . $wiersz)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($color);
-                        $objPHPExcel->getActiveSheet()->getStyle('H' . $wiersz)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setARGB($color);
-                    }
-                    $objPHPExcel->getActiveSheet()->SetCellValue('A' . $wiersz, $licznik);
-                    $objPHPExcel->getActiveSheet()->SetCellValue('B' . $wiersz, $dane['Numer identyfikatora']);
-                    $objPHPExcel->getActiveSheet()->SetCellValue('C' . $wiersz, $dane['Imie']);
-                    $objPHPExcel->getActiveSheet()->SetCellValue('D' . $wiersz, $dane['Nazwisko']);
-                    $objPHPExcel->getActiveSheet()->SetCellValue('E' . $wiersz, $wejscie);
-                    $objPHPExcel->getActiveSheet()->SetCellValue('F' . $wiersz, $wyjscie);
-                    $objPHPExcel->getActiveSheet()->SetCellValue('G' . $wiersz, $czaspracy);
-                    $objPHPExcel->getActiveSheet()->SetCellValue('H' . $wiersz, $dane['Wydzial']);
-
-            $licznik++;
-        }
-          $objPHPExcel->getActiveSheet()->setTitle('StanWejsc');
-
-
-        // Save Excel 2007 file
-
-        $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-
-        // We'll be outputting an excel file
-     //   header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-
-        // It will be called file.xls
-      //  header('Content-Disposition: attachment; filename="StanWejsc.xlsx"');
- $ip=$this->PokazIp();
-        $ip=str_replace('.','_',$ip);
-       $name='/home/lora/tmp/WWW/eWnioski/xlsx/Stan_godzin_'.$ip.'.xlsx';
-        $objWriter->save($name);
-
-mysqli_close($polaczenie);
     }
      /**
      * Dane wyplute z bazy
@@ -7769,7 +6576,7 @@ $warunekosoby $dodatkowy_warunek $warunek_having
         ?>
        <br>
         <form method="POST">
-            <input type="hidden" name="excel_export_wejscia" value="<?php echo $zapytanie?>"/>
+            <input type="hidden" name="excel_export_wejscia" value="<?php echo $this->ZapamietajZapytanie($zapytanie); ?>"/>
             <input type="submit" value="Export widocznych danych do excela"/>
         </form>
 
@@ -8051,7 +6858,7 @@ WHERE DATE_FORMAT(rpz.data_rozpoczecia_pracy,'%Y-%m-%d') >= '".$_SESSION['ewnios
                     color="#00aa00"><?php echo $liczba_rekordow; ?></font></h3>
 
                      <form method="POST" action="raporty.php?praca_zdalna" id="form_excel" >
-                     <input type="hidden" name="zapytanie_excel_praca_zdalna" value="<?php echo $zapytanieexcel;?>">
+                     <input type="hidden" name="zapytanie_excel_praca_zdalna" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel); ?>">
                      <input type="button" value="Eksport do Excela" onclick="document.getElementById('form_excel').submit();" />
                      </form>
                      <br><br>
@@ -8289,12 +7096,7 @@ mysqli_close($polaczenie);
                 $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Wpis pracy zdalnej został usunięty</h3></font>';
             }
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?praca_zdalna');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?praca_zdalna');
     }
     function FormualrzEducjiPracyZdalne()
     {
@@ -8358,12 +7160,7 @@ mysqli_close($polaczenie);
                 $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Wpis został zmieniony</h3></font>';
             }
         mysqli_close($polaczenie);
-        ?>
-        <script type="text/javascript">
-            (window.location = 'raporty.php?praca_zdalna');
-        </script>
-        <?php
-        exit;
+        $this->Przekieruj('raporty.php?praca_zdalna');
     }
     /**
      * Raport urlopów wpisanych przez użytkownika
@@ -8437,7 +7234,7 @@ mysqli_close($polaczenie);
                     color="#00aa00"><?php echo $liczba_rekordow; ?></font></h3>
 
                      <form method="POST" action="raporty.php?praca_zdalna_czas_pracy" id="form_excel" >
-                     <input type="hidden" name="zapytanie_excel_praca_zdalna_czas_pracy" value="<?php echo $zapytanieexcel;?>">
+                     <input type="hidden" name="zapytanie_excel_praca_zdalna_czas_pracy" value="<?php echo $this->ZapamietajZapytanie($zapytanieexcel); ?>">
                      <input type="button" value="Eksport do Excela" onclick="document.getElementById('form_excel').submit();" />
                      </form>
                      <br><br>
@@ -8570,27 +7367,11 @@ mysqli_close($polaczenie);
                     <?php echo $dane['imie']; ?>
             </td>
               <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
-                    <?php echo date_create($dane['data_rozpoczecia'])->format('Y-m-d'); ; ?>
+                    <?php echo date_create((string)$dane['data_rozpoczecia'])->format('Y-m-d'); ?>
             </td>
             <td align="center" bgcolor="<?php echo $color; ?>" class="padding_5_all bottom right">
                     <?php
-                    $data_rozpoczenia=date_create($dane['data_rozpoczecia']);
-                    $data_zakonczenia=date_create($dane['data_zakonczenia']);
-                    $data_wznowienia=date_create($dane['data_wznowienia']);
-                    $data_wstrzymania=date_create($dane['data_wstrzymania']);
-                    $czas_pracy = $data_zakonczenia->diff($data_rozpoczenia);
-                    $czas_przerwy= $data_wznowienia->diff($data_wstrzymania);
-                   $godzina_pracy=$czas_pracy->format('%h');
-                   $minuta_pracy=$czas_pracy->format('%i');
-                   $godzina_przerwy=$czas_przerwy->format('%h');
-                   $minuta_przerwy=$czas_przerwy->format('%i');
-                   $godzina=$godzina_pracy-$godzina_przerwy;
-                   $minuta=$minuta_pracy-$minuta_przerwy;
-                   if($minuta<0)
-                       {
-                          $godzina--;
-                          $minuta=60+$minuta;
-                       }
+                    [$godzina, $minuta] = $this->CzasPracyZdalnej($dane);
                    if($godzina<0)
                        {
                            echo 'Brak zakończenia pracy zdalnej. Zgłoś to do HR';
@@ -8672,12 +7453,7 @@ mysqli_close($polaczenie);
         if (mysqli_affected_rows($polaczenie) > 0) {
             $_SESSION['ewnioski_komunikat'] = '<font color="#00aa00"><h3>Rozpoczęcie/zakończenie/wstrzymanei pracy zostało odnotowane</h3></font>';
             mysqli_close($polaczenie);
-            ?>
-            <script type="text/javascript">
-                (window.location = 'raporty.php?praca_zdalna');
-            </script>
-            <?php
-            exit;
+            $this->Przekieruj('raporty.php?praca_zdalna');
         }
     }
 

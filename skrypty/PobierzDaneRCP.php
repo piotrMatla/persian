@@ -1,11 +1,6 @@
 <?php
 session_start();
-set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__DIR__) . '/php/klasy');
-spl_autoload_register(function ($class) {
-    foreach (explode(PATH_SEPARATOR, get_include_path()) as $path) {
-        if (file_exists($path . "/" . $class . ".php")) require_once($path . "/" . $class . ".php");
-    }
-});
+require_once dirname(__DIR__) . '/php/bootstrap.php';
 $a = new Common;
 $a->UstawieniaStandardowe();
 $_SESSION['ewnioski_profil_wpisz_dane']=22;
