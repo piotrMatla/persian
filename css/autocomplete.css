@@ -1,0 +1,22 @@
+	#nip_dostawcy #kod_towaru, ul {
+            padding: 3px; width: 150px;
+            border: 1px solid #000;
+            font-family: verdana, arial, sans-serif;
+            font-size: 12px;
+        }
+
+	ul { list-style-type: none; font-family: verdana, arial, sans-serif;
+             font-size: 12px;
+             margin: 5px 0 0 0;
+             background-color:#ffc ;
+        }
+
+	li { margin: 0 0 5px 0; 
+             cursor: default;
+             color: #333;
+             font-weight: 600;
+        }
+
+	li:hover { 
+            background: #f4f388;
+        }

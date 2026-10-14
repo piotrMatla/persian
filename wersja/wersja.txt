@@ -1,0 +1,51 @@
+Aktualna wersja: 1.10
+Nazwa programu: eWnioski
+Historia zmian:
+1.10 (9-2020) (programista: Jakub Duda) (Osoba zgłaszająca: Magdalena Wulczyńska)
+ - Stworzenie raportu wejść i wyjść
+ ----------------------------------------------------------------------------------------------------------------------
+1.09 (8-2020) (programista: Jakub Duda) (Osoba zgłaszająca: Magdalena Wulczyńska)
+ - Przeniesienie moduł godzin nadliczbowych
+ ----------------------------------------------------------------------------------------------------------------------
+1.08 (5-2020) (programista: Jakub Duda) (Osoba zgłaszająca: Magdalena Wulczyńska)
+ - Raprot sprawdzający stan zastępców
+ ----------------------------------------------------------------------------------------------------------------------
+1.07 (2-2020) (programista: Jakub Duda) (Osoba zgłaszająca: Magdalena Wulczyńska)
+ - Przystosowanie programu do monitorów dotykowych
+ - Zmiana algorytmu przypisywania przełożonego z raportu Stan nadgodzin
+ - Usnięcie raportów z wyjątkami
+ - Wysyłanie maila o źle przypisanym przełożonym
+ ----------------------------------------------------------------------------------------------------------------------
+1.06 (11-2019) (programista: Jakub Duda) (Osoba zgłaszająca: Magdalena Wulczyńska)
+ - Stan urlopu i nadgodzin wyświetla się podczas wpisywania nowego wniosku
+ - Brak możliwości wpisania urlopu wypoczynkowego jeśli osoba nie ma wystarczającej liczby dni
+ ----------------------------------------------------------------------------------------------------------------------
+1.05 (07-2019) (programista: Jakub Duda) (Osoba zgłaszająca: Magdalena Wulczyńska)
+ - Raport urlopu i stanu nadgodzin
+ ----------------------------------------------------------------------------------------------------------------------
+1.04 (05-2019) (programista: Jakub Duda) (Osoba zgłaszająca: Kozieja Małgorzata )
+ - Jeśli liczba dni urlopu jest mniejsza od 1 to wpisuje częście dziesiętne w eksporcie do Saturna
+----------------------------------------------------------------------------------------------------------------------
+1.03 (02-2019) (programista: Jakub Duda) (Osoba zgłaszająca: HR )
+ - Wysyłanie maili od poniedziałku do piątku
+----------------------------------------------------------------------------------------------------------------------
+1.02 (02-2019) (programista: Jakub Duda) (Osoba zgłaszająca: HR )
+ - Wartość godzin przyjmuje liczbę dziesiętną.
+ - Usunięcie błędu podczas wpisywania urlopu na dziecko.
+ - Wpisywanie urlopu dla innych osób z innym mailem niż brygadzista.
+ - Dodanie numeru ewidencyjnego do eksportu pliku Excel
+ - Blokowanie IE i starych wersji Firefoxa
+ - Informacje o wpisanym mailu i przełożonym
+ - Wprowadzenie  filtrów widoczności  kolumn w raportach
+ - Raport  osób wraz z przełożonym
+ - W raporcie wyjątków z MPK-ami można wpisać tylko jeden raz dany MPK
+ - W raporcie wyjątków z osobami można wpisać tylko jeden raz dany numer ewidencyjny
+ - Usunięcie urlopu za odpracowane godzin
+ - Raport wszystkich osób z systemu ewidencja szkoleń
+ - Wyrzutka do Excela zwolnień z godzin
+ - Anulowanie urlopu przez brygadzistę
+----------------------------------------------------------------------------------------------------------------------
+
+(12-2018) (programista: Jakub Duda) (Osoba zgłaszająca: Magdalena Wulczyńska )
+ - Napisanie programu według założeń
+----------------------------------------------------------------------------------------------------------------------
