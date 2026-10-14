@@ -14,6 +14,7 @@ declare(strict_types=1);
 use EWnioski\Domain\Enum\LeaveStatus;
 use EWnioski\Domain\Enum\LeaveType;
 use EWnioski\Domain\Enum\Role;
+use EWnioski\Domain\Navigation\ModuleCatalog;
 use EWnioski\Domain\Leave\LeaveRequestDraft;
 use EWnioski\Domain\User\User;
 use EWnioski\Domain\WorkingDays\WorkingDaysCalculator;
@@ -134,6 +135,26 @@ check('zakres na przełomie lat -> odrzucone', function () use ($user, $draft) {
     $a = $user('A1');
     $s = new LeaveRequestService(new FakeLeaveStore(), new FakeBalance(['A1' => 50.0]), new ArrayHolidayProvider(), new FakeUserDirectory(['A1' => $a]));
     assertThrows(ValidationException::class, fn () => $s->submit($a, $draft('A1', '2025-12-29', '2026-01-05')));
+});
+
+echo "Pulpit – filtr modułów po roli (serwer):\n";
+check('HR widzi sekcję administracyjną', function () use ($user) {
+    $cat = new ModuleCatalog();
+    assertSame(true, $cat->hasAdminModules($user('H1', Role::Hr)));
+});
+check('pracownik NIE widzi modułów HR', function () use ($user) {
+    $cat = new ModuleCatalog();
+    $emp = $user('A1', Role::Employee);
+    assertSame(false, $cat->hasAdminModules($emp));
+    foreach ($cat->visibleFor($emp) as $item) {
+        if ($item->category === 'admin') {
+            throw new \RuntimeException('pracownik dostał moduł admin: ' . $item->id);
+        }
+    }
+});
+check('kierownik NIE widzi modułów HR', function () use ($user) {
+    $cat = new ModuleCatalog();
+    assertSame(false, (new ModuleCatalog())->hasAdminModules($user('M1', Role::Manager)));
 });
 
 echo "\nWynik: {$passed} OK, {$failed} błędów\n";

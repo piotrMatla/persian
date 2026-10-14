@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use EWnioski\Controller\AuthController;
+use EWnioski\Controller\DashboardController;
 use EWnioski\Controller\LeaveController;
 use EWnioski\Domain\Enum\Role;
 use EWnioski\Http\Request;
@@ -20,6 +21,7 @@ $auth = $container->authenticator()->currentContext();
 
 $authController = new AuthController($container, $auth);
 $leaveController = new LeaveController($container, $auth);
+$dashboardController = new DashboardController($container, $auth);
 
 $router = new Router();
 
@@ -29,12 +31,13 @@ $router->add('POST', '/login', $authController->login(...), null);
 
 // Trasy wymagające zalogowania (roles = [] => dowolna rola).
 $router->add('GET', '/logout', $authController->logout(...), []);
+$router->add('GET', '/dashboard', $dashboardController->index(...), []);
 $router->add('GET', '/leave', $leaveController->form(...), []);
 $router->add('POST', '/leave/submit', $leaveController->submit(...), []);
 
-// Strona główna -> logowanie lub wnioski.
+// Strona główna -> logowanie lub pulpit.
 $router->add('GET', '/', static function () use ($auth): Response {
-    return Response::redirect($auth->isLoggedIn() ? 'leave' : 'login');
+    return Response::redirect($auth->isLoggedIn() ? 'dashboard' : 'login');
 }, null);
 
 try {

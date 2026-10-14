@@ -20,7 +20,7 @@ final class AuthController
     public function showLogin(Request $request): Response
     {
         if ($this->auth->isLoggedIn()) {
-            return Response::redirect('leave');
+            return Response::redirect('dashboard');
         }
 
         $content = $this->c->view()->render('auth/login', [
@@ -47,7 +47,7 @@ final class AuthController
             return $this->loginError($request, 'Nieprawidłowy numer ewidencyjny lub hasło.');
         }
 
-        return Response::redirect('leave');
+        return Response::redirect('dashboard');
     }
 
     public function logout(Request $request): Response
