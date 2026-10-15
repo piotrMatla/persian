@@ -1,0 +1,22 @@
+# Uruchomienie: cp .env.example .env  (uzupełnij dane bazy i SMTP), potem: docker compose up -d --build
+services:
+  ewnioski:
+    build:
+      context: .
+      args:
+        # 1 = rozszerzenia odbc/sqlsrv i sterownik MS ODBC 18 (RCP, Saturn, logowanie przepustką)
+        INSTALL_MSSQL: ${INSTALL_MSSQL:-0}
+    image: ewnioski:php8.5
+    container_name: ewnioski
+    restart: unless-stopped
+    ports:
+      - "${EWNIOSKI_PORT:-8080}:80"
+    env_file: .env
+    volumes:
+      # logi, pliki tymczasowe importu i dokumenty do pobrania (pliki/, pliki_kierownicy/)
+      - ./dane:/var/lib/ewnioski
+      # Klasa Polaczenie (RCP/Saturn) z serwera - montowana pod tą samą ścieżką, którą zna program:
+      # - /home/lora/public_html/PolaczenieWise:/home/lora/public_html/PolaczenieWise:ro
+    extra_hosts:
+      # pozwala połączyć się z MySQL działającym na tym samym serwerze (EWNIOSKI_DB_HOST=host.docker.internal)
+      - "host.docker.internal:host-gateway"

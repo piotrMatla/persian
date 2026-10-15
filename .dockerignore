@@ -1,0 +1,13 @@
+.git
+.gitignore
+.dockerignore
+.env
+.env.*
+vendor
+dane
+docker-compose.yml
+Dockerfile
+README.md
+doc/*.docx
+doc/*.xlsx
+!doc/urlopy.xlsx

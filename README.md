@@ -25,6 +25,33 @@ Wersja 2.00 działa na PHP 8.2–8.5 (testowana na PHP 8.5) i korzysta z tej sam
 - PHPExcel 1.8, PEAR `Spreadsheet_Excel_Writer` i stary FPDF z `/home/lora/public_html/...` nie są już używane (nie działają na PHP 8) –
   zastąpiły je PhpSpreadsheet i FPDF z Composera. Czcionka do wydruków PDF (Liberation Sans z polskimi znakami) jest w `php/fonts`.
 
+## Docker (PHP 8.5 + Apache)
+
+```sh
+cp .env.example .env      # dane do bazy, adres programu, SMTP
+docker compose up -d --build
+```
+
+Program będzie pod `http://serwer:8080/` (port: `EWNIOSKI_PORT`), stare adresy `/eWnioski/php/...` też działają.
+
+- **Baza** – kontener łączy się z dotychczasową bazą MySQL (`EWNIOSKI_DB_*` w `.env`). Jeśli MySQL działa na tym samym serwerze,
+  ustaw `EWNIOSKI_DB_HOST=host.docker.internal`; MySQL musi wtedy nasłuchiwać nie tylko na `127.0.0.1` (`bind-address`),
+  a użytkownik bazy musi mieć dostęp z sieci Dockera (np. `'user'@'172.%'`).
+- **Dane** – katalog `./dane` (logi, pliki tymczasowe importu, `pliki/` i `pliki_kierownicy/` z dokumentami do pobrania).
+  Zamiast `confe.ini` kontener używa `conf/confe.docker.ini`, który wskazuje na te foldery i bierze adresy mailowe z `.env`.
+- **Maile** – wysyła je `msmtp` przez serwer SMTP z `.env` (`SMTP_HOST` itd.). Bez `SMTP_HOST` maile nie wychodzą.
+- **RCP i Saturn** – zbuduj obraz z `INSTALL_MSSQL=1` (rozszerzenia `odbc`, `sqlsrv` i sterownik Microsoft ODBC 18) i odkomentuj
+  w `docker-compose.yml` montowanie katalogu `PolaczenieWise`. Jeśli klasa `Polaczenie` używa DSN-ów z `/etc/odbc.ini`, zamontuj też ten plik.
+- **Logi PHP i Apache** – `docker compose logs -f ewnioski`.
+- **Cron** – na serwerze, np.:
+
+  ```
+  0 7 * * 1-5  docker compose -f /sciezka/do/eWnioski/docker-compose.yml exec -T ewnioski php php/mail.php
+  */10 * * * * docker compose -f /sciezka/do/eWnioski/docker-compose.yml exec -T ewnioski php skrypty/PobierzDaneRCP.php
+  ```
+
+Aktualizacja programu: `git pull && docker compose up -d --build`.
+
 ## Struktura
 
 - `php/bootstrap.php` – wspólny start każdego skryptu (autoloader, Composer, ustawienia mysqli)

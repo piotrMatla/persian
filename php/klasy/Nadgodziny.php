@@ -235,7 +235,7 @@ Edycja pozycji przez: " . $_SESSION['ewnioski_full_name'] . " " . date('Y-m-d H:
                         <b>Twoja notatka:</b>
                     </td>
                     <td align="left">
-                        <textarea name="notatka" cols="40" style="border: 1px #000000 solid"><?php echo $dane[$kolumna]; ?></textarea>
+                        <textarea name="notatka" cols="40" style="border: 1px #000000 solid"><?php echo htmlspecialchars((string)($dane[$kolumna] ?? '')); ?></textarea>
                     </td>
                 </tr>
                 <tr>
